@@ -3,8 +3,10 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
+  useReducer,
   useState,
-  useRef
+  useRef,
+  useCallback
 } from "react";
 
 import { parseGIF, decompressFrames } from "gifuct-js";
@@ -104,9 +106,45 @@ const fetchAndParse = (src) => {
     });
 };
 
+const useEventCallback = (callback) => {
+  const ref = useRef(callback);
+
+  useEffect(() => {
+    ref.current = callback;
+  });
+
+  return useCallback((arg) => ref.current?.(arg), []);
+};
+
+const useRaf = (callback, pause) => {
+  const cb = useEventCallback(callback);
+
+  useEffect(() => {
+    if (!pause) {
+      let id;
+      let prev = null;
+
+      const handleUpdate = () => {
+        id = requestAnimationFrame((now) => {
+          const dt = now - (prev ?? now);
+          prev = now;
+
+          cb(dt);
+          handleUpdate();
+        });
+      };
+
+      handleUpdate();
+
+      return () => cancelAnimationFrame(id);
+    }
+  }, [pause, cb]);
+};
+
 const GifPlayer = ({ src }) => {
   const canvasRef = useRef();
   const [info, setInfo] = useState(null);
+  const [paused, play] = useState(true);
 
   useEffect(() => {
     (async () => {
@@ -118,35 +156,78 @@ const GifPlayer = ({ src }) => {
 
   useEffect(() => {
     if (info && canvasRef.current) {
-      const { frames, sizes, delays } = info;
+      const { sizes } = info;
 
       canvasRef.current.width = sizes.width;
       canvasRef.current.height = sizes.height;
-
-      const ctx = canvasRef.current.getContext("2d");
-      let index = 0;
-      let id;
-
-      const updateFrame = () => {
-        const currentIndex = index % frames.length;
-        ctx.putImageData(frames[currentIndex], 0, 0);
-
-        id = setTimeout(() => {
-          index++;
-          updateFrame();
-        }, delays[currentIndex]);
-      };
-
-      updateFrame();
-
-      return () => clearTimeout(id);
     }
   }, [canvasRef, info]);
 
+  const ctx = useRef(null);
+  const index = useRef(0);
+  const delay = useRef(0);
+  const renderedFrame = useRef(null);
+
+  useLayoutEffect(() => {
+    ctx.current = canvasRef.current.getContext("2d");
+  }, []);
+
+  useRaf((dt) => {
+    const { frames, delays } = info;
+    const currentIndex = index.current % frames.length;
+
+    delay.current += dt;
+
+    if (renderedFrame.current !== currentIndex) {
+      ctx.current.putImageData(frames[currentIndex], 0, 0);
+    }
+
+    if (delay.current > delays[currentIndex]) {
+      delay.current = delay.current % delays[currentIndex];
+      index.current += 1;
+    }
+  }, paused);
+
+  const [key, rerender] = useReducer((v) => !v, 0);
+
+  useEffect(() => {
+    if (info) {
+      const { frames } = info;
+      const currentIndex = index.current % frames.length;
+      if (paused) {
+        ctx.current.putImageData(frames[currentIndex], 0, 0);
+      }
+    }
+  }, [key, paused, info]);
+
   return (
     <>
-      <canvas ref={canvasRef} />
+      <div>
+        <canvas ref={canvasRef} />
+      </div>
+
+      <div>
+        <button
+          onClick={() => {
+            index.current -= 1;
+            rerender();
+          }}
+        >
+          {"<"}
+        </button>
+        <button onClick={() => play((v) => !v)}>play</button>
+        <button
+          onClick={() => {
+            index.current += 1;
+            rerender();
+          }}
+        >
+          {">"}
+        </button>
+      </div>
+
       <br />
+
       <img src={src} />
     </>
   );
