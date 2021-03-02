@@ -141,9 +141,34 @@ const useRaf = (callback, pause) => {
   }, [pause, cb]);
 };
 
-const GifPlayer = ({ src }) => {
+const Canvas = ({ index, frames, width, height }) => {
   const canvasRef = useRef();
+  const ctx = useRef();
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      ctx.current = canvasRef.current.getContext("2d");
+    }
+  }, [canvasRef]);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      canvasRef.current.width = width;
+      canvasRef.current.height = height;
+    }
+  }, [canvasRef, width, height]);
+
+  useEffect(() => {
+    const currentIndex = index % frames.length;
+    ctx.current.putImageData(frames[currentIndex], 0, 0);
+  }, [index, frames]);
+
+  return <canvas ref={canvasRef} />;
+};
+
+const GifPlayer = ({ src }) => {
   const [info, setInfo] = useState(null);
+  const [index, setIndex] = useState(0);
   const [paused, play] = useState(true);
 
   useEffect(() => {
@@ -154,81 +179,50 @@ const GifPlayer = ({ src }) => {
     })();
   }, [src]);
 
-  useEffect(() => {
-    if (info && canvasRef.current) {
-      const { sizes } = info;
-
-      canvasRef.current.width = sizes.width;
-      canvasRef.current.height = sizes.height;
-    }
-  }, [canvasRef, info]);
-
-  const ctx = useRef(null);
-  const index = useRef(0);
   const delay = useRef(0);
-  const renderedFrame = useRef(null);
-
-  useLayoutEffect(() => {
-    ctx.current = canvasRef.current.getContext("2d");
-  }, []);
 
   useRaf((dt) => {
     const { frames, delays } = info;
-    const currentIndex = index.current % frames.length;
+    const currentIndex = index % frames.length;
 
     delay.current += dt;
 
-    if (renderedFrame.current !== currentIndex) {
-      ctx.current.putImageData(frames[currentIndex], 0, 0);
-    }
-
     if (delay.current > delays[currentIndex]) {
       delay.current = delay.current % delays[currentIndex];
-      index.current += 1;
+      setIndex(index + 1);
     }
   }, paused);
-
-  const [key, rerender] = useReducer((v) => !v, 0);
-
-  useEffect(() => {
-    if (info) {
-      const { frames } = info;
-      const currentIndex = index.current % frames.length;
-      if (paused) {
-        ctx.current.putImageData(frames[currentIndex], 0, 0);
-      }
-    }
-  }, [key, paused, info]);
 
   return (
     <>
       <div>
-        <canvas ref={canvasRef} />
+        {info && (
+          <Canvas
+            index={index}
+            frames={info.frames}
+            width={info.sizes.width}
+            height={info.sizes.height}
+          />
+        )}
       </div>
 
       <div>
-        <button
-          onClick={() => {
-            index.current -= 1;
-            rerender();
-          }}
-        >
-          {"<"}
-        </button>
+        <button onClick={() => setIndex((index) => index - 1)}>{"<"}</button>
         <button onClick={() => play((v) => !v)}>play</button>
-        <button
-          onClick={() => {
-            index.current += 1;
-            rerender();
-          }}
-        >
-          {">"}
-        </button>
+        <button onClick={() => setIndex((index) => index + 1)}>{">"}</button>
+
+        {info && (
+          <input
+            type="range"
+            value={index % info.frames.length}
+            onChange={(e) => setIndex(~~e.target.value)}
+            min={0}
+            max={info.frames.length - 1}
+          />
+        )}
       </div>
 
-      <br />
-
-      <img src={src} />
+      {/* <img src={src} /> */}
     </>
   );
 };
