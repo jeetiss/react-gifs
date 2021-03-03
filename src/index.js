@@ -3,13 +3,13 @@ import React, {
   useContext,
   useEffect,
   useLayoutEffect,
-  useReducer,
   useState,
   useRef,
-  useCallback
+  useCallback,
 } from "react";
 
-import { parseGIF, decompressFrames } from "gifuct-js";
+import Worker from "worker:./worker";
+import { genearate } from "./parse-generate";
 
 const gloabalContext = createContext({});
 
@@ -35,77 +35,6 @@ const useSingleWorker = (constructor, destructor) => {
   return globalRef.worker;
 };
 
-const createCanvas = ({ width, height }) => {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = width;
-  canvas.height = height;
-
-  if (ctx) {
-    return [canvas, ctx];
-  }
-
-  throw Error("uups");
-};
-
-const generateFrames = (frames, gif) => {
-  const sizes = gif.lsd;
-  const [temp, tempCtx] = createCanvas(sizes);
-  const [canvas, ctx] = createCanvas(sizes);
-
-  const framesAsImageData = [];
-
-  let imageData;
-
-  for (let frame of frames) {
-    const { width, height, top, left } = frame.dims;
-    if (
-      !imageData ||
-      imageData.width !== width ||
-      imageData.height !== height
-    ) {
-      imageData = new ImageData(width, height);
-    }
-
-    imageData.data.set(frame.patch);
-
-    tempCtx.putImageData(imageData, left, top);
-
-    if (frame.disposalType === 2) {
-      ctx.clearRect(0, 0, sizes.width, sizes.height);
-    }
-
-    ctx.drawImage(temp, 0, 0);
-
-    framesAsImageData.push(ctx.getImageData(0, 0, sizes.width, sizes.height));
-  }
-
-  const duration = frames.reduce(
-    (duration, frame) => duration + frame.delay,
-    0
-  );
-
-  const delays = frames.map((frame) => frame.delay);
-
-  return {
-    sizes,
-    duration,
-    delays,
-    frames: framesAsImageData
-  };
-};
-
-const fetchAndParse = (src) => {
-  return fetch(src)
-    .then((resp) => resp.arrayBuffer())
-    .then((buff) => parseGIF(buff))
-    .then((gif) => Promise.all([decompressFrames(gif, true), gif]))
-    .then(([frames, gif]) => {
-      return generateFrames(frames, gif);
-    });
-};
-
 const useEventCallback = (callback) => {
   const ref = useRef(callback);
 
@@ -113,7 +42,7 @@ const useEventCallback = (callback) => {
     ref.current = callback;
   });
 
-  return useCallback((arg) => ref.current?.(arg), []);
+  return useCallback((arg) => ref.current && ref.current(arg), []);
 };
 
 const useRaf = (callback, pause) => {
@@ -126,7 +55,7 @@ const useRaf = (callback, pause) => {
 
       const handleUpdate = () => {
         id = requestAnimationFrame((now) => {
-          const dt = now - (prev ?? now);
+          const dt = now - (prev || now);
           prev = now;
 
           cb(dt);
@@ -169,21 +98,32 @@ const Canvas = ({ index, frames, width, height }) => {
 const GifPlayer = ({ src }) => {
   const [info, setInfo] = useState(null);
   const [index, setIndex] = useState(0);
-  const [paused, play] = useState(true);
+  const [paused, play] = useState(false);
+
+  const worker = useSingleWorker(
+    () => new Worker(),
+    (worker) => worker.terminate()
+  );
 
   useEffect(() => {
-    (async () => {
-      const info = await fetchAndParse(src);
+    worker.addEventListener("message", (e) => {
+      const message = e.data || e;
 
-      setInfo(info);
-    })();
-  }, [src]);
+      if (message.src === src) {
+        genearate(message.frames, message.options, (info) => {
+          setInfo(info);
+        });
+      }
+    });
+
+    worker.postMessage({ src });
+  }, [worker, src]);
 
   const delay = useRef(0);
 
   useRaf((dt) => {
-    const { frames, delays } = info;
-    const currentIndex = index % frames.length;
+    const { delays } = info;
+    const currentIndex = index % delays.length;
 
     delay.current += dt;
 
@@ -191,10 +131,10 @@ const GifPlayer = ({ src }) => {
       delay.current = delay.current % delays[currentIndex];
       setIndex(index + 1);
     }
-  }, paused);
+  }, paused || !info);
 
   return (
-    <>
+    <div>
       <div>
         {info && (
           <Canvas
@@ -221,9 +161,7 @@ const GifPlayer = ({ src }) => {
           />
         )}
       </div>
-
-      {/* <img src={src} /> */}
-    </>
+    </div>
   );
 };
 
