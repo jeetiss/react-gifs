@@ -9,7 +9,7 @@ import React, {
 } from "react";
 
 import Worker from "worker:./worker";
-import { genearate } from "./parse-generate";
+import { genearate, isOffscreenCanvasSupported } from "./parse-generate";
 
 const gloabalContext = createContext({});
 
@@ -89,7 +89,7 @@ const Canvas = ({ index, frames, width, height }) => {
 
   useEffect(() => {
     const currentIndex = index % frames.length;
-    ctx.current.putImageData(frames[currentIndex], 0, 0);
+    ctx.current.drawImage(frames[currentIndex], 0, 0);
   }, [index, frames]);
 
   return <canvas ref={canvasRef} />;
@@ -108,11 +108,14 @@ const GifPlayer = ({ src }) => {
   useEffect(() => {
     worker.addEventListener("message", (e) => {
       const message = e.data || e;
-
       if (message.src === src) {
-        genearate(message.frames, message.options, (info) => {
-          setInfo(info);
-        });
+        if (isOffscreenCanvasSupported) {
+          setInfo(message);
+        } else {
+          genearate(message.frames, message.options).then((info) => {
+            setInfo(info);
+          });
+        }
       }
     });
 
