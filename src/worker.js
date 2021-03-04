@@ -19,7 +19,7 @@ self.addEventListener("message", (e) => {
           });
         }
 
-        return { frames: result, options };
+        return { ...options, frames: result };
       }
     })
     .then((result) => {

@@ -87,7 +87,7 @@ export const genearate = (frames, options) => {
       Promise.resolve([])
     )
     .then((framesAsImageBitmap) => ({
-      sizes: options,
+      ...options,
       duration,
       delays,
       frames: framesAsImageBitmap,

@@ -2,14 +2,14 @@
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-gap: 10;
-  align-items: center;
-  justify-items: center;
+  /* align-items: center;
+  justify-items: center; */
 }
 
 .container > div {
-  min-height: 500px;
   display: flex;
-  justify-content: center;
-  align-items: center;
   flex-direction: column;
+  /* min-height: 500px;
+  justify-content: center;
+  align-items: center; */
 }

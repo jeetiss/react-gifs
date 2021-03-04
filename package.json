@@ -3,17 +3,44 @@
   "version": "0.0.0",
   "description": "react gif player",
   "main": "dist/index.js",
+  "module": "dist/index.js",
   "scripts": {
     "size": "npm run build && size-limit",
     "build": "rollup -c",
     "prepare": "npm run build",
     "start-demo": "parcel demo/index.html --out-dir demo/dist --open",
-    "build-demo": "rm -rf 'demo/dist/*' && parcel build demo/index.html --out-dir demo/dist --public-url https://omgovich.github.io/gif-player/",
+    "build-demo": "rm -rf 'demo/dist/' && parcel build demo/index.html --out-dir demo/dist --public-url https://jeetiss.github.io/gif-player/",
     "deploy-demo": "npm run build-demo && gh-pages -d demo/dist"
   },
   "size-limit": [
     {
       "path": "dist/index.js",
+      "import": "{ GifPlayer }",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/index.js",
+      "import": "{ useLoader }",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/index.js",
+      "import": "{ useWorkerLoader }",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/index.js",
+      "import": "{ usePlayerState }",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/index.js",
+      "import": "{ useMotor }",
+      "limit": "10 KB"
+    },
+    {
+      "path": "dist/index.js",
+      "import": "{ Canvas }",
       "limit": "10 KB"
     }
   ],
