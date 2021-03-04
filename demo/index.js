@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, StrictMode } from "react";
 import ReactDOM from "react-dom";
 import "./styles.css";
 import { GifPlayer } from "..";
@@ -61,4 +61,9 @@ const App = () => {
   );
 };
 
-ReactDOM.render(<App />, document.getElementById("root"));
+ReactDOM.render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+  document.getElementById("root")
+);
