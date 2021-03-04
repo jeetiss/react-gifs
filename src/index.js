@@ -132,13 +132,13 @@ const Canvas = ({ index, frames, width, height, fit }) => {
   const canvasRef = useRef();
   const ctx = useRef();
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (canvasRef.current) {
       ctx.current = canvasRef.current.getContext("2d");
     }
   }, [canvasRef]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.width = width;
       canvasRef.current.height = height;
