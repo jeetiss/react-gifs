@@ -208,10 +208,6 @@ const useWorkerLoader = (src, callback) => {
   }, [worker, src]);
 };
 
-// const useMotor = () => {
-
-// };
-
 const initializer = (stateOrFn) => {
   const { playing = true, frames = [], delays = [], index = 0 } =
     (typeof stateOrFn === "function" ? stateOrFn() : stateOrFn) || {};
@@ -284,8 +280,6 @@ const usePlayerState = (stateOrFn) => {
 
 const useMotor = (state, updater) => {
   const delay = useRef(0);
-
-  const pausedRef = useEventCallback(!state.playing);
 
   useRaf((dt) => {
     const { delays, index: currentIndex } = state;
