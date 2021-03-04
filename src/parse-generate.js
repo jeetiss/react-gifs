@@ -34,6 +34,21 @@ const createCanvas = ({ width, height }) => {
   throw Error("uups");
 };
 
+const getImageBitmap = (canvas) => {
+  if (typeof createImageBitmap === 'undefined') {
+    return new Promise(resolve => {
+      const dataURL = canvas.toDataURL();
+      const img = document.createElement('img');
+			img.addEventListener('load',function () {
+        resolve(this);
+			});
+			img.src = dataURL;
+    }) 
+  } else {
+    return createImageBitmap(canvas)
+  }
+}
+
 export const genearate = (frames, options) => {
   const [temp, tempCtx] = createCanvas(options);
   const [canvas, ctx] = createCanvas(options);
@@ -76,7 +91,7 @@ export const genearate = (frames, options) => {
 
             return Promise.all([
               framesAsImageBitmap,
-              createImageBitmap(canvas),
+              getImageBitmap(canvas),
             ]);
           })
           .then(([framesAsImageBitmap, bitmap]) => {
