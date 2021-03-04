@@ -5,7 +5,7 @@ import { terser } from "rollup-plugin-terser";
 import worker from "rollup-plugin-web-worker-loader";
 
 const extensions = [".js", ".json"];
-const external = ["react"];
+const external = ["react", "gifuct-js"];
 
 const getBabelOptions = (
   targets = ">1%, not dead, not ie 11, not op_mini all"
@@ -34,12 +34,10 @@ export default [
       resolve({ extensions }),
       worker({
         targetPlatform: "browser",
-        sourcemap: false,
         pattern: /worker:(.+)/,
+        external: [],
       }),
-      terser({
-        compress: { passes: 3 },
-      }),
+      terser({ compress: { passes: 3 } }),
     ],
   },
 ];

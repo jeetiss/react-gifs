@@ -44,7 +44,10 @@
       "limit": "10 KB"
     }
   ],
-  "dependencies": {},
+  "sideEffects": false,
+  "dependencies": {
+    "gifuct-js": "^2.0.0"
+  },
   "peerDependencies": {
     "react": ">=16.13",
     "react-dom": ">=16.13"
@@ -61,13 +64,12 @@
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@size-limit/preset-small-lib": "^4.9.2",
     "gh-pages": "^3.1.0",
-    "gifuct-js": "^2.0.0",
     "parcel-bundler": "^1.12.4",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "rollup": "^2.40.0",
     "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-web-worker-loader": "^1.6.0",
+    "rollup-plugin-web-worker-loader": "^1.6.1",
     "size-limit": "^4.9.2"
   }
 }
