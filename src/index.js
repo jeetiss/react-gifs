@@ -294,7 +294,6 @@ const useMotor = (state, updater) => {
 
 const GifPlayer = ({ src, width, height, fit = "fill" }) => {
   const { state, next, prev, load, toggle, set } = usePlayerState({
-    index: 500,
     playing: true,
   });
 
