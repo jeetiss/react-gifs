@@ -36,18 +36,22 @@ const useSingleWorker = (constructor, destructor) => {
   return globalRef.worker;
 };
 
-const useEventCallback = (callback) => {
-  const ref = useRef(callback);
-
+const useUpdatedRef = (value) => {
+  const ref = useRef(value);
   useEffect(() => {
-    ref.current = callback;
-  });
+    ref.current = value;
+  }, [value]);
+  return ref;
+};
 
+const useEventCallback = (callback) => {
+  const ref = useUpdatedRef(callback);
   return useCallback((arg) => ref.current && ref.current(arg), []);
 };
 
 const useRaf = (callback, pause) => {
   const cb = useEventCallback(callback);
+  const isPaused = useUpdatedRef(pause);
 
   useEffect(() => {
     if (!pause) {
@@ -55,6 +59,7 @@ const useRaf = (callback, pause) => {
       let prev = null;
 
       const handleUpdate = () => {
+        if (isPaused.current) return;
         id = requestAnimationFrame((now) => {
           const dt = now - (prev || now);
           prev = now;
@@ -279,6 +284,8 @@ const usePlayerState = (stateOrFn) => {
 
 const useMotor = (state, updater) => {
   const delay = useRef(0);
+
+  const pausedRef = useEventCallback(!state.playing);
 
   useRaf((dt) => {
     const { delays, index: currentIndex } = state;
