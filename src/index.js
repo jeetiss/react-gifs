@@ -302,7 +302,7 @@ const GifPlayer = ({ src, width, height, fit = "fill" }) => {
     load(info);
   });
 
-  useMotor(state, prev);
+  useMotor(state, next);
 
   return (
     <div>
