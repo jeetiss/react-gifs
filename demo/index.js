@@ -4,6 +4,7 @@ import "./styles.css";
 import { GifPlayer } from "..";
 
 const App = () => {
+  const [src, setSrc] = useState('https://media.giphy.com/media/LG1ZZP1Go0D8j7YsWy/giphy.gif')
   const [width, setWidth] = useState(500);
   const [height, setHeight] = useState(500);
   const [fit, setFit] = useState("cover");
@@ -11,6 +12,14 @@ const App = () => {
   return (
     <div className="container">
       <div>
+        <label style={{ padding: 10 }}>
+          src
+          <input
+            type="text"
+            value={src}
+            onChange={(e) => setSrc(e.target.value)}
+          />
+        </label>
         <label style={{ padding: 10 }}>
           width
           <input
@@ -39,7 +48,7 @@ const App = () => {
         </label>
 
         <GifPlayer
-          src="https://media.giphy.com/media/LG1ZZP1Go0D8j7YsWy/giphy.gif"
+          src={src}
           width={width}
           height={height}
           fit={fit}
