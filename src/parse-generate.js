@@ -59,11 +59,6 @@ export const genearate = ([frames, options], { signal } = {}) => {
   const [temp, tempCtx] = createCanvas(options);
   const [canvas, ctx] = createCanvas(options);
   const delays = frames.map((frame) => frame.delay);
-  const duration = frames.reduce(
-    (duration, frame) => duration + frame.delay,
-    0
-  );
-
   let imageData;
 
   return frames
@@ -110,7 +105,7 @@ export const genearate = ([frames, options], { signal } = {}) => {
     )
     .then((framesAsImageBitmap) => ({
       ...options,
-      duration,
+      length: framesAsImageBitmap.length,
       delays,
       frames: framesAsImageBitmap,
     }));

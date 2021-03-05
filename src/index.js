@@ -255,18 +255,35 @@ const initializer = (stateOrFn) => {
 
 const reducer = (state, action) => {
   switch (action.type) {
-    case "load": {
-      return {
-        ...state,
-        playing: state._playing,
-        loaded: true,
-        frames: action.frames,
-        delays: action.delays,
-        length: action.frames.length,
-        width: action.width,
-        height: action.height,
-        index: state.index % action.frames.length,
-      };
+    case "update": {
+      const { index, length, delays, frames, width, height } = action;
+      const copy = { ...state };
+
+      if (length != null) {
+        Object.assign(copy, { length, index: copy.index % length });
+      }
+
+      if (index != null) {
+        Object.assign(copy, { index: index % copy.length });
+      }
+
+      if (delays != null) {
+        Object.assign(copy, { delays });
+      }
+
+      if (frames != null) {
+        Object.assign(copy, { frames, playing: copy._playing, loaded: true });
+      }
+
+      if (width != null) {
+        Object.assign(copy, { width });
+      }
+
+      if (height != null) {
+        Object.assign(copy, { height });
+      }
+
+      return copy;
     }
     case "toggle": {
       return {
@@ -287,25 +304,21 @@ const reducer = (state, action) => {
         index: (state.length + state.index - 1) % state.length,
       };
     }
-    case "set": {
-      return {
-        ...state,
-        index: action.index % state.length,
-      };
-    }
   }
 };
 
 const usePlayerState = (stateOrFn) => {
   const [state, dispatch] = useReducer(reducer, stateOrFn, initializer);
 
-  const load = useCallback((data) => dispatch({ type: "load", ...data }), []);
   const toggle = useCallback(() => dispatch({ type: "toggle" }), []);
   const next = useCallback(() => dispatch({ type: "next" }), []);
   const prev = useCallback(() => dispatch({ type: "prev" }), []);
-  const set = useCallback((index) => dispatch({ type: "set", index }), []);
+  const update = useCallback(
+    (data) => dispatch({ type: "update", ...data }),
+    []
+  );
 
-  return { state, next, toggle, load, prev, set };
+  return { state, next, toggle, update, prev };
 };
 
 const useMotor = (state, updater) => {
@@ -324,12 +337,12 @@ const useMotor = (state, updater) => {
 };
 
 const GifPlayer = ({ src, width, height, fit = "fill" }) => {
-  const { state, next, prev, load, toggle, set } = usePlayerState({
+  const { state, next, prev, update, toggle } = usePlayerState({
     playing: true,
   });
 
   useWorkerLoader(src, (info) => {
-    load(info);
+    update(info);
   });
 
   useMotor(state, next);
@@ -354,7 +367,7 @@ const GifPlayer = ({ src, width, height, fit = "fill" }) => {
         <input
           type="range"
           value={state.index}
-          onChange={(e) => set(~~e.target.value)}
+          onChange={(e) => update({ index: ~~e.target.value })}
           min={0}
           max={state.length - 1}
         />
