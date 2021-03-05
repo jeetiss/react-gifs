@@ -169,16 +169,33 @@ const Canvas = ({ index, frames, width, height, fit }) => {
   return <canvas ref={canvasRef} />;
 };
 
+const useAsyncEffect = (fn, deps) => {
+  const cb = useEventCallback(fn);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const dest = cb(controller);
+
+    return () => {
+      controller.abort();
+      dest && dest();
+    };
+  }, [...deps]);
+};
+
 const useLoader = (src, callback) => {
   const cb = useEventCallback(callback);
 
-  useEffect(() => {
-    if (src) {
-      parse(src)
-        .then(([frames, options]) => genearate(frames, options))
-        .then((info) => cb(info));
-    }
-  }, [src]);
+  useAsyncEffect(
+    (controller) => {
+      if (src) {
+        parse(src, { signal: controller.signal })
+          .then((raw) => genearate(raw, { signal: controller.signal }))
+          .then((info) => cb(info));
+      }
+    },
+    [src]
+  );
 };
 
 const useWorkerLoader = (src, callback) => {
@@ -189,23 +206,38 @@ const useWorkerLoader = (src, callback) => {
     (worker) => worker.terminate()
   );
 
-  useEffect(() => {
-    if (src) {
-      const handler = (e) => {
-        const message = e.data || e;
-        if (message.src === src) {
-          if (isOffscreenCanvasSupported) {
-            cb(message);
-          } else {
-            genearate(message.frames, message.options).then((info) => cb(info));
+  useAsyncEffect(
+    (controller) => {
+      if (src) {
+        const handler = (e) => {
+          const message = e.data || e;
+          if (message.src === src) {
+            if (isOffscreenCanvasSupported) {
+              cb(message);
+            } else {
+              genearate([message.frames, message.options], {
+                signal: controller.signal,
+              }).then((info) => cb(info));
+            }
           }
-        }
-      };
+        };
 
-      worker.addEventListener("message", handler);
-      worker.postMessage({ src });
-    }
-  }, [worker, src]);
+        const abortHandler = () => {
+          worker.postMessage({ src, type: "cancel" });
+        };
+
+        controller.signal.addEventListener("abort", abortHandler);
+        worker.addEventListener("message", handler);
+        worker.postMessage({ src, type: "parse" });
+
+        return () => {
+          controller.signal.removeEventListener("abort", abortHandler);
+          worker.removeEventListener("message", handler);
+        };
+      }
+    },
+    [worker, src]
+  );
 };
 
 const initializer = (stateOrFn) => {
