@@ -52,14 +52,12 @@ const useEventCallback = (callback) => {
 const useRaf = (callback, pause) => {
   const cb = useEventCallback(callback);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!pause) {
       let id;
       let prev = null;
-      let isPaused = false
 
       const handleUpdate = () => {
-        if (isPaused) return;
         id = requestAnimationFrame((now) => {
           const dt = now - (prev || now);
           prev = now;
@@ -71,10 +69,7 @@ const useRaf = (callback, pause) => {
 
       handleUpdate();
 
-      return () => {
-        isPaused = true
-        cancelAnimationFrame(id);
-      }
+      return () => cancelAnimationFrame(id);
     }
   }, [pause, cb]);
 };
