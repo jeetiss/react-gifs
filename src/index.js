@@ -131,7 +131,7 @@ const calcArgs = (fit, bitmapSize, canvasSize) => {
   }
 };
 
-const Canvas = ({ index, frames, width, height, fit }) => {
+const Canvas = ({ index, frames, width, height, fit, className, style }) => {
   const canvasRef = useRef();
   const ctx = useRef();
 
@@ -164,7 +164,7 @@ const Canvas = ({ index, frames, width, height, fit }) => {
     }
   }, [index, frames, width, height, fit]);
 
-  return <canvas ref={canvasRef} />;
+  return <canvas ref={canvasRef} className={className} style={style} />;
 };
 
 const useAsyncEffect = (fn, deps) => {
@@ -376,4 +376,4 @@ const GifPlayer = ({ src, width, height, fit = "fill" }) => {
   );
 };
 
-export { GifPlayer, useWorkerLoader, useLoader, Canvas, useMotor };
+export { GifPlayer, useWorkerLoader, useLoader, Canvas, useMotor, usePlayerState };
