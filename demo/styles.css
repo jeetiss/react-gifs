@@ -13,3 +13,14 @@
   justify-content: center;
   align-items: center; */
 }
+
+.header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  padding-top: 20px;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+}
