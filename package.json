@@ -15,33 +15,33 @@
   "size-limit": [
     {
       "path": "dist/index.js",
-      "import": "{ GifPlayer }",
-      "limit": "10 KB"
-    },
-    {
-      "path": "dist/index.js",
+      "name": "useLoader",
       "import": "{ useLoader }",
-      "limit": "10 KB"
+      "limit": "5 KB"
     },
     {
       "path": "dist/index.js",
+      "name": "useWorkerLoader",
       "import": "{ useWorkerLoader }",
-      "limit": "10 KB"
+      "limit": "5 KB"
     },
     {
       "path": "dist/index.js",
+      "name": "usePlayerState",
       "import": "{ usePlayerState }",
-      "limit": "10 KB"
+      "limit": "5 KB"
     },
     {
       "path": "dist/index.js",
+      "name": "useMotor",
       "import": "{ useMotor }",
-      "limit": "10 KB"
+      "limit": "5 KB"
     },
     {
       "path": "dist/index.js",
+      "name": "Canvas",
       "import": "{ Canvas }",
-      "limit": "10 KB"
+      "limit": "5 KB"
     }
   ],
   "sideEffects": false,
@@ -63,13 +63,14 @@
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@size-limit/preset-small-lib": "^4.9.2",
+    "babel-plugin-annotate-pure-calls": "^0.4.0",
     "gh-pages": "^3.1.0",
     "parcel-bundler": "^1.12.4",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "rollup": "^2.40.0",
+    "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-terser": "^7.0.2",
-    "rollup-plugin-web-worker-loader": "^1.6.1",
     "size-limit": "^4.9.2"
   }
 }

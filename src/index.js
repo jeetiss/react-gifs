@@ -8,7 +8,7 @@ import React, {
   useReducer,
 } from "react";
 
-import Worker from "worker:./worker";
+import Worker from "./wrapper";
 import { genearate, parse, isOffscreenCanvasSupported } from "./parse-generate";
 
 const gloabalContext = createContext({});
