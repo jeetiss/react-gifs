@@ -5,10 +5,10 @@ import React, {
   useLayoutEffect,
   useRef,
   useCallback,
-  useReducer,
 } from "react";
 
 import Worker from "./wrapper";
+import { usePlayerState } from "./state";
 import { genearate, parse, isOffscreenCanvasSupported } from "./parse-generate";
 
 const gloabalContext = createContext({});
@@ -238,90 +238,7 @@ const useWorkerLoader = (src, callback) => {
   );
 };
 
-const initializer = (stateOrFn) => {
-  const { playing = true, frames = [], delays = [], index = 0 } =
-    (typeof stateOrFn === "function" ? stateOrFn() : stateOrFn) || {};
-
-  return {
-    _playing: playing,
-    playing: !!(playing && frames && frames.length),
-    loaded: !!(frames && frames.length),
-    index,
-    frames,
-    delays,
-    length: frames && frames.length,
-  };
-};
-
-const reducer = (state, action) => {
-  switch (action.type) {
-    case "update": {
-      const { index, length, delays, frames, width, height } = action;
-      const copy = { ...state };
-
-      if (length != null) {
-        Object.assign(copy, { length, index: copy.index % length });
-      }
-
-      if (index != null) {
-        Object.assign(copy, { index: index % copy.length });
-      }
-
-      if (delays != null) {
-        Object.assign(copy, { delays });
-      }
-
-      if (frames != null) {
-        Object.assign(copy, { frames, playing: copy._playing, loaded: true });
-      }
-
-      if (width != null) {
-        Object.assign(copy, { width });
-      }
-
-      if (height != null) {
-        Object.assign(copy, { height });
-      }
-
-      return copy;
-    }
-    case "toggle": {
-      return {
-        ...state,
-        _playing: !state._playing,
-        playing: !state._playing && state.loaded,
-      };
-    }
-    case "next": {
-      return {
-        ...state,
-        index: (state.index + 1) % state.length,
-      };
-    }
-    case "prev": {
-      return {
-        ...state,
-        index: (state.length + state.index - 1) % state.length,
-      };
-    }
-  }
-};
-
-const usePlayerState = (stateOrFn) => {
-  const [state, dispatch] = useReducer(reducer, stateOrFn, initializer);
-
-  const toggle = useCallback(() => dispatch({ type: "toggle" }), []);
-  const next = useCallback(() => dispatch({ type: "next" }), []);
-  const prev = useCallback(() => dispatch({ type: "prev" }), []);
-  const update = useCallback(
-    (data) => dispatch({ type: "update", ...data }),
-    []
-  );
-
-  return { state, next, toggle, update, prev };
-};
-
-const useMotor = (state, updater) => {
+const usePlayback = (state, updater) => {
   const delay = useRef(0);
 
   useRaf((dt) => {
@@ -337,7 +254,7 @@ const useMotor = (state, updater) => {
 };
 
 const GifPlayer = ({ src, width, height, fit = "fill" }) => {
-  const { state, next, prev, update, toggle } = usePlayerState({
+  const [state, update] = usePlayerState({
     playing: true,
   });
 
@@ -345,7 +262,7 @@ const GifPlayer = ({ src, width, height, fit = "fill" }) => {
     update(info);
   });
 
-  useMotor(state, next);
+  usePlayback(state, () => update(({ index }) => ({ index: index + 1 })));
 
   return (
     <div>
@@ -360,9 +277,17 @@ const GifPlayer = ({ src, width, height, fit = "fill" }) => {
       </div>
 
       <div>
-        <button onClick={() => prev()}>{"<"}</button>
-        <button onClick={() => toggle()}>play</button>
-        <button onClick={() => next()}>{">"}</button>
+        <button onClick={() => update(({ index }) => ({ index: index - 1 }))}>
+          {"<"}
+        </button>
+        <button
+          onClick={() => update(({ playing }) => ({ playing: !playing }))}
+        >
+          play
+        </button>
+        <button onClick={() => update(({ index }) => ({ index: index + 1 }))}>
+          {">"}
+        </button>
 
         <input
           type="range"
@@ -376,4 +301,11 @@ const GifPlayer = ({ src, width, height, fit = "fill" }) => {
   );
 };
 
-export { GifPlayer, useWorkerLoader, useLoader, Canvas, useMotor, usePlayerState };
+export {
+  GifPlayer,
+  useWorkerLoader,
+  useLoader,
+  Canvas,
+  usePlayback,
+  usePlayerState,
+};
