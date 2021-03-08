@@ -66,25 +66,25 @@ const ratio = window.innerWidth / (window.innerHeight);
 const width = 200;
 const height = width / ratio;
 
-const GIF = ({ src, delay }) => {
-  const { state, next, update } = usePlayerState({
-    playing: true,
-    index: delay,
-  });
+// const GIF = ({ src, delay }) => {
+//   const { state, next, update } = usePlayerState({
+//     playing: true,
+//     index: delay,
+//   });
 
-  useWorkerLoader(src, update);
-  useMotor(state, next);
+//   useWorkerLoader(src, update);
+//   useMotor(state, next);
 
-  return (
-    <Canvas
-      {...state}
-      width={width}
-      height={height}
-      fit="cover"
-      className="canvas"
-    />
-  );
-};
+//   return (
+//     <Canvas
+//       {...state}
+//       width={width}
+//       height={height}
+//       fit="cover"
+//       className="canvas"
+//     />
+//   );
+// };
 
 let tf = Array.from({ length: 49 }, (_, i) => i);
 const src = "https://media.giphy.com/media/HHQl6KZXaSvjq/giphy.gif";
@@ -93,11 +93,11 @@ const App = () => (
   <div>
     <Player />
 
-    <div className="header">
+    {/* <div className="header">
       {tf.map((key) => (
         <GIF src={src} key={key} />
       ))}
-    </div>
+    </div> */}
   </div>
 );
 

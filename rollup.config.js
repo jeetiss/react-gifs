@@ -3,7 +3,6 @@ import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import { string } from "rollup-plugin-string";
 import { terser } from "rollup-plugin-terser";
-import worker from "rollup-plugin-web-worker-loader";
 
 const extensions = [".js", ".json"];
 const external = ["react", "gifuct-js"];
