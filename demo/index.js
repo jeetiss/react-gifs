@@ -1,13 +1,55 @@
 import React, { useState, StrictMode } from "react";
 import ReactDOM from "react-dom";
 import "./styles.css";
-import {
-  GifPlayer,
-  Canvas,
-  usePlayerState,
-  useWorkerLoader,
-  useMotor,
-} from "..";
+import { Canvas, usePlayerState, useWorkerParser, usePlayback } from "..";
+
+const GifPlayer = ({ src, width, height, fit = "fill" }) => {
+  const [state, update] = usePlayerState({
+    playing: true,
+  });
+
+  useWorkerParser(src, (info) => {
+    update(info);
+  });
+
+  usePlayback(state, () => update(({ index }) => ({ index: index + 1 })));
+
+  return (
+    <div>
+      <div>
+        <Canvas
+          index={state.index}
+          frames={state.frames}
+          width={width || state.width}
+          height={height || state.height}
+          fit={fit}
+        />
+      </div>
+
+      <div>
+        <button onClick={() => update(({ index }) => ({ index: index - 1 }))}>
+          {"<"}
+        </button>
+        <button
+          onClick={() => update(({ playing }) => ({ playing: !playing }))}
+        >
+          play
+        </button>
+        <button onClick={() => update(({ index }) => ({ index: index + 1 }))}>
+          {">"}
+        </button>
+
+        <input
+          type="range"
+          value={state.index}
+          onChange={(e) => update({ index: ~~e.target.value })}
+          min={0}
+          max={state.length - 1}
+        />
+      </div>
+    </div>
+  );
+};
 
 const Player = () => {
   const [src, setSrc] = useState(
@@ -61,43 +103,9 @@ const Player = () => {
   );
 };
 
-const ratio = window.innerWidth / (window.innerHeight);
-
-const width = 200;
-const height = width / ratio;
-
-// const GIF = ({ src, delay }) => {
-//   const { state, next, update } = usePlayerState({
-//     playing: true,
-//     index: delay,
-//   });
-
-//   useWorkerLoader(src, update);
-//   useMotor(state, next);
-
-//   return (
-//     <Canvas
-//       {...state}
-//       width={width}
-//       height={height}
-//       fit="cover"
-//       className="canvas"
-//     />
-//   );
-// };
-
-let tf = Array.from({ length: 49 }, (_, i) => i);
-const src = "https://media.giphy.com/media/HHQl6KZXaSvjq/giphy.gif";
-
 const App = () => (
   <div>
     <Player />
-
-    {/* <div className="header">
-      {tf.map((key) => (
-        <GIF src={src} key={key} />
-      ))}
-    </div> */}
   </div>
 );
 
