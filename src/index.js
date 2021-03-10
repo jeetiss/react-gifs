@@ -181,12 +181,12 @@ const useAsyncEffect = (fn, deps) => {
   }, [...deps]);
 };
 
-const useLoader = (src, callback) => {
+const useParser = (src, callback) => {
   const cb = useEventCallback(callback);
 
   useAsyncEffect(
     (controller) => {
-      if (src) {
+      if (typeof src === 'string') {
         parse(src, { signal: controller.signal })
           .then((raw) => genearate(raw, { signal: controller.signal }))
           .then((info) => cb(info));
@@ -196,7 +196,7 @@ const useLoader = (src, callback) => {
   );
 };
 
-const useWorkerLoader = (src, callback) => {
+const useWorkerParser = (src, callback) => {
   const cb = useEventCallback(callback);
 
   const worker = useSingleWorker(
@@ -206,7 +206,7 @@ const useWorkerLoader = (src, callback) => {
 
   useAsyncEffect(
     (controller) => {
-      if (src) {
+      if (typeof src === 'string') {
         const handler = (e) => {
           const message = e.data || e;
           if (message.src === src) {
@@ -219,17 +219,12 @@ const useWorkerLoader = (src, callback) => {
             }
           }
         };
-
-        const abortHandler = () => {
-          worker.postMessage({ src, type: "cancel" });
-        };
-
-        controller.signal.addEventListener("abort", abortHandler);
+        
         worker.addEventListener("message", handler);
         worker.postMessage({ src, type: "parse" });
 
         return () => {
-          controller.signal.removeEventListener("abort", abortHandler);
+          worker.postMessage({ src, type: "cancel" });
           worker.removeEventListener("message", handler);
         };
       }
@@ -253,58 +248,10 @@ const usePlayback = (state, updater) => {
   }, !state.playing);
 };
 
-const GifPlayer = ({ src, width, height, fit = "fill" }) => {
-  const [state, update] = usePlayerState({
-    playing: true,
-  });
-
-  useWorkerLoader(src, (info) => {
-    update(info);
-  });
-
-  usePlayback(state, () => update(({ index }) => ({ index: index + 1 })));
-
-  return (
-    <div>
-      <div>
-        <Canvas
-          index={state.index}
-          frames={state.frames}
-          width={width || state.width}
-          height={height || state.height}
-          fit={fit}
-        />
-      </div>
-
-      <div>
-        <button onClick={() => update(({ index }) => ({ index: index - 1 }))}>
-          {"<"}
-        </button>
-        <button
-          onClick={() => update(({ playing }) => ({ playing: !playing }))}
-        >
-          play
-        </button>
-        <button onClick={() => update(({ index }) => ({ index: index + 1 }))}>
-          {">"}
-        </button>
-
-        <input
-          type="range"
-          value={state.index}
-          onChange={(e) => update({ index: ~~e.target.value })}
-          min={0}
-          max={state.length - 1}
-        />
-      </div>
-    </div>
-  );
-};
-
 export {
   GifPlayer,
-  useWorkerLoader,
-  useLoader,
+  useWorkerParser,
+  useParser,
   Canvas,
   usePlayback,
   usePlayerState,
