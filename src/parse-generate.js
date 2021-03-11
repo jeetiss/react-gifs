@@ -105,7 +105,6 @@ export const genearate = ([frames, options], { signal } = {}) => {
     )
     .then((framesAsImageBitmap) => ({
       ...options,
-      length: framesAsImageBitmap.length,
       delays,
       frames: framesAsImageBitmap,
     }));

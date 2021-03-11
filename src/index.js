@@ -249,7 +249,6 @@ const usePlayback = (state, updater) => {
 };
 
 export {
-  GifPlayer,
   useWorkerParser,
   useParser,
   Canvas,
