@@ -17,14 +17,14 @@
   "size-limit": [
     {
       "path": "dist/index.js",
-      "name": "useLoader",
-      "import": "{ useLoader }",
+      "name": "useParser",
+      "import": "{ useParser }",
       "limit": "5 KB"
     },
     {
       "path": "dist/index.js",
-      "name": "useWorkerLoader",
-      "import": "{ useWorkerLoader }",
+      "name": "useWorkerParser",
+      "import": "{ useWorkerParser }",
       "limit": "5 KB"
     },
     {
