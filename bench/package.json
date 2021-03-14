@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "devDependencies": {
+    "@rollup/plugin-inject": "^4.0.2",
+    "@rollup/plugin-virtual": "^2.0.3",
+    "nodemark": "^0.3.0",
+    "playwright": "^1.9.2"
+  }
+}
