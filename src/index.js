@@ -9,7 +9,7 @@ import React, {
 
 import Worker from "./wrapper";
 import { usePlayerState } from "./state";
-import { genearate, parse, isOffscreenCanvasSupported } from "./parse-generate";
+import { genearate, parse } from "./parse-generate";
 
 const gloabalContext = createContext({});
 
@@ -74,14 +74,14 @@ const useRaf = (callback, pause) => {
   }, [pause, cb]);
 };
 
-const calcArgs = (fit, bitmapSize, canvasSize) => {
+const calcArgs = (fit, frameSize, canvasSize) => {
   switch (fit) {
     case "fill":
       return [
         0,
         0,
-        bitmapSize.width,
-        bitmapSize.height,
+        frameSize.width,
+        frameSize.height,
         0,
         0,
         canvasSize.width,
@@ -90,39 +90,39 @@ const calcArgs = (fit, bitmapSize, canvasSize) => {
 
     case "contain": {
       const ratio = Math.min(
-        canvasSize.width / bitmapSize.width,
-        canvasSize.height / bitmapSize.height
+        canvasSize.width / frameSize.width,
+        canvasSize.height / frameSize.height
       );
-      const centerX = (canvasSize.width - bitmapSize.width * ratio) / 2;
-      const centerY = (canvasSize.height - bitmapSize.height * ratio) / 2;
+      const centerX = (canvasSize.width - frameSize.width * ratio) / 2;
+      const centerY = (canvasSize.height - frameSize.height * ratio) / 2;
       return [
         0,
         0,
-        bitmapSize.width,
-        bitmapSize.height,
+        frameSize.width,
+        frameSize.height,
         centerX,
         centerY,
-        bitmapSize.width * ratio,
-        bitmapSize.height * ratio,
+        frameSize.width * ratio,
+        frameSize.height * ratio,
       ];
     }
 
     case "cover": {
       const ratio = Math.max(
-        canvasSize.width / bitmapSize.width,
-        canvasSize.height / bitmapSize.height
+        canvasSize.width / frameSize.width,
+        canvasSize.height / frameSize.height
       );
-      const centerX = (canvasSize.width - bitmapSize.width * ratio) / 2;
-      const centerY = (canvasSize.height - bitmapSize.height * ratio) / 2;
+      const centerX = (canvasSize.width - frameSize.width * ratio) / 2;
+      const centerY = (canvasSize.height - frameSize.height * ratio) / 2;
       return [
         0,
         0,
-        bitmapSize.width,
-        bitmapSize.height,
+        frameSize.width,
+        frameSize.height,
         centerX,
         centerY,
-        bitmapSize.width * ratio,
-        bitmapSize.height * ratio,
+        frameSize.width * ratio,
+        frameSize.height * ratio,
       ];
     }
 
@@ -132,8 +132,15 @@ const calcArgs = (fit, bitmapSize, canvasSize) => {
 };
 
 const Canvas = ({ index, frames, width, height, fit, className, style }) => {
+  const temp = useRef();
+  const tempCtx = useRef();
   const canvasRef = useRef();
   const ctx = useRef();
+
+  useLayoutEffect(() => {
+    temp.current = document.createElement("canvas");
+    tempCtx.current = temp.current.getContext("2d");
+  }, []);
 
   useLayoutEffect(() => {
     if (canvasRef.current) {
@@ -155,11 +162,20 @@ const Canvas = ({ index, frames, width, height, fit, className, style }) => {
   }, [width, height, fit]);
 
   useEffect(() => {
-    const imageBitmap = frames[index];
-    if (imageBitmap) {
+    const imageData = frames[index];
+    if (imageData) {
+      if (
+        temp.current.width !== imageData.width ||
+        temp.current.height !== imageData.height
+      ) {
+        temp.current.width = imageData.width;
+        temp.current.height = imageData.height;
+      }
+
+      tempCtx.current.putImageData(imageData, 0, 0);
       ctx.current.drawImage(
-        imageBitmap,
-        ...calcArgs(fit, imageBitmap, { width, height })
+        temp.current,
+        ...calcArgs(fit, temp.current, { width, height })
       );
     }
   }, [index, frames, width, height, fit]);
@@ -186,9 +202,9 @@ const useParser = (src, callback) => {
 
   useAsyncEffect(
     (controller) => {
-      if (typeof src === 'string') {
+      if (typeof src === "string") {
         parse(src, { signal: controller.signal })
-          .then((raw) => genearate(raw, { signal: controller.signal }))
+          .then((raw) => genearate(raw))
           .then((info) => cb(info));
       }
     },
@@ -204,33 +220,24 @@ const useWorkerParser = (src, callback) => {
     (worker) => worker.terminate()
   );
 
-  useAsyncEffect(
-    (controller) => {
-      if (typeof src === 'string') {
-        const handler = (e) => {
-          const message = e.data || e;
-          if (message.src === src) {
-            if (isOffscreenCanvasSupported) {
-              cb(message);
-            } else {
-              genearate([message.frames, message.options], {
-                signal: controller.signal,
-              }).then((info) => cb(info));
-            }
-          }
-        };
-        
-        worker.addEventListener("message", handler);
-        worker.postMessage({ src, type: "parse" });
+  useEffect(() => {
+    if (typeof src === "string") {
+      const handler = (e) => {
+        const message = e.data || e;
+        if (message.src === src) {
+          cb(genearate(message));
+        }
+      };
 
-        return () => {
-          worker.postMessage({ src, type: "cancel" });
-          worker.removeEventListener("message", handler);
-        };
-      }
-    },
-    [worker, src]
-  );
+      worker.addEventListener("message", handler);
+      worker.postMessage({ src, type: "parse" });
+
+      return () => {
+        worker.postMessage({ src, type: "cancel" });
+        worker.removeEventListener("message", handler);
+      };
+    }
+  }, [worker, src]);
 };
 
 const usePlayback = (state, updater) => {
@@ -248,10 +255,4 @@ const usePlayback = (state, updater) => {
   }, !state.playing);
 };
 
-export {
-  useWorkerParser,
-  useParser,
-  Canvas,
-  usePlayback,
-  usePlayerState,
-};
+export { useWorkerParser, useParser, Canvas, usePlayback, usePlayerState };

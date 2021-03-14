@@ -1,111 +1,64 @@
 import { parseGIF, decompressFrames } from "gifuct-js";
 
-export const isOffscreenCanvasSupported =
-  typeof OffscreenCanvas !== "undefined";
-
-export const canUseOffscreenCanvas =
-  typeof HTMLElement === "undefined" && isOffscreenCanvasSupported;
-
-const abortify = (signal = { aborted: false }, callback) => {
-  return (args) => (signal.aborted ? Promise.reject("cancel") : callback(args));
-};
-
-export const parse = (src, { signal } = {}) =>
+export const parse = (src, { signal }) =>
   fetch(src, { signal })
-    .then(abortify(signal, (resp) => resp.arrayBuffer()))
-    .then(abortify(signal, (buff) => parseGIF(buff)))
-    .then(
-      abortify(signal, (gif) =>
-        Promise.all([
-          decompressFrames(gif, true),
-          { width: gif.lsd.width, height: gif.lsd.height },
-        ])
-      )
-    );
-
-const createCanvas = ({ width, height }) => {
-  const canvas = canUseOffscreenCanvas
-    ? new OffscreenCanvas(width, height)
-    : document.createElement("canvas");
-
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = width;
-  canvas.height = height;
-
-  if (ctx) {
-    return [canvas, ctx];
-  }
-
-  throw Error("uups");
-};
-
-const getImageBitmap = (canvas) => {
-  if (typeof createImageBitmap === "undefined") {
-    return new Promise((resolve) => {
-      const dataURL = canvas.toDataURL();
-      const img = document.createElement("img");
-      img.addEventListener("load", function () {
-        resolve(this);
-      });
-      img.src = dataURL;
-    });
-  } else {
-    return createImageBitmap(canvas);
-  }
-};
-
-export const genearate = ([frames, options], { signal } = {}) => {
-  const [temp, tempCtx] = createCanvas(options);
-  const [canvas, ctx] = createCanvas(options);
-  const delays = frames.map((frame) => frame.delay);
-  let imageData;
-
-  return frames
-    .reduce(
-      (promise, frame) =>
-        promise
-          .then(
-            abortify(signal, (framesAsImageBitmap) => {
-              const { width, height, top, left } = frame.dims;
-
-              if (
-                !imageData ||
-                imageData.width !== width ||
-                imageData.height !== height
-              ) {
-                imageData = new ImageData(width, height);
-              }
-
-              imageData.data.set(
-                canUseOffscreenCanvas
-                  ? frame.patch
-                  : new Uint8ClampedArray(frame.patch)
-              );
-
-              tempCtx.putImageData(imageData, left, top);
-
-              if (frame.disposalType === 2) {
-                ctx.clearRect(0, 0, options.width, options.height);
-              }
-
-              ctx.drawImage(temp, 0, 0);
-
-              return Promise.all([framesAsImageBitmap, getImageBitmap(canvas)]);
-            })
-          )
-          .then(
-            abortify(signal, ([framesAsImageBitmap, bitmap]) => {
-              framesAsImageBitmap.push(bitmap);
-
-              return framesAsImageBitmap;
-            })
-          ),
-      Promise.resolve([])
+    .then((resp) => resp.arrayBuffer())
+    .then((buffer) => parseGIF(buffer))
+    .then((gif) =>
+      Promise.all([
+        decompressFrames(gif, false),
+        { width: gif.lsd.width, height: gif.lsd.height },
+      ])
     )
-    .then((framesAsImageBitmap) => ({
-      ...options,
-      delays,
-      frames: framesAsImageBitmap,
-    }));
+    .then(([frames, options]) => {
+      let readyFrames = [];
+
+      for (let i = 0; i < frames.length; ++i) {
+        const frame = frames[i];
+        let typedArray =
+          frame.disposalType === 2 || i === 0
+            ? new Uint8ClampedArray(options.width * options.height * 4)
+            : readyFrames[i - 1].slice();
+
+        readyFrames.push(putPixels(typedArray, frame, options));
+      }
+
+      return {
+        ...options,
+        delays: frames.map((frame) => frame.delay),
+        frames: readyFrames,
+      };
+    });
+
+const putPixels = (typedArray, frame, gifSize) => {
+  const { width, height, top: dy, left: dx } = frame.dims;
+  const offset = dy * gifSize.width + dx
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pPos = y * width + x;
+      const colorIndex = frame.pixels[pPos];
+      if (colorIndex !== frame.transparentIndex) {
+        const taPos = offset + y * gifSize.width + x;
+        const color = frame.colorTable[colorIndex] || [0, 0, 0];
+        typedArray[taPos * 4] = color[0];
+        typedArray[taPos * 4 + 1] = color[1];
+        typedArray[taPos * 4 + 2] = color[2];
+        typedArray[taPos * 4 + 3] = 255;
+      }
+    }
+  }
+
+  return typedArray;
+};
+
+export const genearate = (info) => {
+  return {
+    ...info,
+    frames: info.frames.map((buffer) => {
+      const image = new ImageData(info.width, info.height);
+      image.data.set(new Uint8ClampedArray(buffer));
+
+      return image;
+    }),
+  };
 };
