@@ -5,7 +5,7 @@ type State = {
   height?: number;
 
   delays: number[];
-  frames: ImageBitmap[];
+  frames: ImageData[];
   length: number;
   loaded: boolean;
 
@@ -36,7 +36,7 @@ declare function useWorkerParser(
 
 declare const Canvas: FC<{
   index: number;
-  frames: ImageBitmap[];
+  frames: ImageData[];
   width?: number;
   height?: number;
   fit?: "cover" | "contain" | "fill";

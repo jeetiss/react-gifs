@@ -50,6 +50,12 @@ expectType(<Canvas index={0} frames={[]} width={100} height={300} />);
 
 expectType(<Canvas index={0} frames={[]} className="class" />);
 
+const idFrames = [new ImageData(2, 2)]
+expectType(<Canvas index={0} frames={idFrames} className="class" />);
+
+const ibFrames = [new ImageBitmap()]
+expectError(<Canvas index={0} frames={ibFrames} className="class" />);
+
 expectError(React.createElement(Canvas, {}));
 
 expectError(<Canvas index={0} frames={[]} fit="unknown" />);
