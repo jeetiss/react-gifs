@@ -1,117 +1,91 @@
-import React, { useState, StrictMode } from "react";
+import React, { StrictMode, useEffect } from "react";
 import ReactDOM from "react-dom";
+import { useControls } from "leva";
 import "./styles.css";
+
+
 import { Canvas, usePlayerState, useWorkerParser, usePlayback } from "..";
 
-const GifPlayer = ({ src, width, height, fit = "fill" }) => {
-  const [state, update] = usePlayerState({
-    playing: true,
+const Player = () => {
+  const [state, update] = usePlayerState();
+
+  const { src, width, height, fit } = useControls({
+    src: {
+      value: "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif",
+    },
+
+    width: {
+      value: 500,
+      step: 10,
+      min: 10,
+      max: window.innerWidth,
+    },
+
+    height: {
+      value: 500,
+      step: 10,
+      min: 10,
+      max: window.innerHeight,
+    },
+
+    fit: {
+      value: "fill",
+      options: ["fill", "contain", "cover"],
+    },
   });
+
+  const [{ playing, index, delays }, set] = useControls(
+    "state",
+    () => ({
+      playing: { value: true },
+      index: { value: 0, step: 1, min: 0, max: 100 },
+      delays: {
+        value: 60,
+        min: 20,
+        max: 200,
+      },
+    }),
+  );
+
+  // update playing
+  useEffect(() => {
+    update({ playing });
+  }, [playing]);
+
+  // update index
+  useEffect(() => {
+    update({ index });
+  }, [index]);
+
+  // update delays
+  useEffect(() => {
+    update(({ frames }) => ({ delays: frames.map(() => delays) }));
+  }, [delays]);
 
   useWorkerParser(src, (info) => {
-    update(info);
+    // set initial delay
+    update({ ...info, delays: info.frames.map(() => delays) });
   });
 
-  usePlayback(state, () => update(({ index }) => ({ index: index + 1 })));
+  usePlayback(state, () => {
+    set({ index: (state.index + 1) % state.length });
+  });
 
   return (
-    <div>
-      <div>
-        <Canvas
-          index={state.index}
-          frames={state.frames}
-          width={width || state.width}
-          height={height || state.height}
-          fit={fit}
-        />
-      </div>
-
-      <div>
-        <button onClick={() => update(({ index }) => ({ index: index - 1 }))}>
-          {"<"}
-        </button>
-        <button
-          onClick={() => update(({ playing }) => ({ playing: !playing }))}
-        >
-          play
-        </button>
-        <button onClick={() => update(({ index }) => ({ index: index + 1 }))}>
-          {">"}
-        </button>
-
-        <input
-          type="range"
-          value={state.index}
-          onChange={(e) => update({ index: ~~e.target.value })}
-          min={0}
-          max={state.length - 1}
-        />
-      </div>
-    </div>
+    <Canvas
+      index={state.index}
+      frames={state.frames}
+      width={width || state.width}
+      height={height || state.height}
+      fit={fit}
+      style={{ border: "1px solid #e2e2e2" }}
+    />
   );
 };
-
-const Player = () => {
-  const [src, setSrc] = useState(
-    "https://media.giphy.com/media/LG1ZZP1Go0D8j7YsWy/giphy.gif"
-  );
-  const [width, setWidth] = useState(500);
-  const [height, setHeight] = useState(500);
-  const [fit, setFit] = useState("cover");
-
-  return (
-    <div className="container">
-      <div>
-        <label style={{ padding: 10 }}>
-          src
-          <input
-            type="text"
-            value={src}
-            onChange={(e) => setSrc(e.target.value)}
-          />
-        </label>
-        <label style={{ padding: 10 }}>
-          width
-          <input
-            type="number"
-            step={10}
-            value={width}
-            onChange={(e) => setWidth(~~e.target.value)}
-          />
-        </label>
-        <label style={{ padding: 10 }}>
-          height
-          <input
-            type="number"
-            step={10}
-            value={height}
-            onChange={(e) => setHeight(~~e.target.value)}
-          />
-        </label>
-        <label style={{ padding: 10 }}>
-          fit
-          <select value={fit} onChange={(e) => setFit(e.target.value)}>
-            <option>fill</option>
-            <option>contain</option>
-            <option>cover</option>
-          </select>
-        </label>
-
-        <GifPlayer src={src} width={width} height={height} fit={fit} />
-      </div>
-    </div>
-  );
-};
-
-const App = () => (
-  <div>
-    <Player />
-  </div>
-);
 
 ReactDOM.render(
   <StrictMode>
-    <App />
+    <Player />
   </StrictMode>,
   document.getElementById("root")
 );
