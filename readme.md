@@ -1,12 +1,12 @@
 # react gifs
 
-Set of react tools for GIFS renering
+Set of react tools for GIFs renering
 
 ## Features
 
-- _small_ : Just 4.99 KB gzipped code
-- _modular_ : Use hooks and components that you need
-- _fast_ : Uses web workers for parsing
+- __small__ : Just 4.99 KB gzipped code
+- __modular__ : Use hooks and components that you need
+- __fast__ : Uses web workers for parsing
 
 ## Getting Started
 
@@ -31,3 +31,7 @@ const Gif = (src) => {
   return <Canvas {...state} />;
 };
 ```
+
+## Demos
+
+- [gh-pages](https://jeetiss.github.io/react-gifs/)
