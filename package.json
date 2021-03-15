@@ -1,20 +1,49 @@
 {
-  "name": "gif-player",
-  "version": "0.0.0",
-  "description": "react gif player",
+  "name": "@react-gifs/tools",
+  "version": "0.0.1",
+  "description": "Set of react tools for GIFs renering",
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "index.d.ts",
+  "files": [
+    "dist/index.js",
+    "index.d.ts"
+  ],
+  "repository": "jeetiss/react-gifs",
+  "keywords": [
+    "react",
+    "gifs",
+    "react-gif",
+    "gif player",
+    "gif parser"
+  ],
+  "author": "Ivakhnenko Dmitry <jeetiss@ya.ru>",
+  "dependencies": {
+    "gifuct-js": "^2.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeetiss/react-gifs/issues"
+  },
   "scripts": {
     "size": "npm run build && size-limit",
     "build": "rollup -c",
     "prepare": "npm run build",
     "test": "tsd && jest",
     "start-demo": "parcel demo/index.html --out-dir demo/dist --open",
-    "build-demo": "rm -rf 'demo/dist/' && parcel build demo/index.html --out-dir demo/dist --public-url https://jeetiss.github.io/gif-player/",
+    "build-demo": "rm -rf 'demo/dist/' && parcel build demo/index.html --out-dir demo/dist --public-url https://jeetiss.github.io/react-gifs/",
     "deploy-demo": "npm run build-demo && gh-pages -d demo/dist"
   },
   "size-limit": [
+    {
+      "path": "dist/index.js",
+      "name": "all",
+      "limit": "5 KB"
+    },
     {
       "path": "dist/index.js",
       "name": "useParser",
@@ -54,20 +83,13 @@
     }
   },
   "tsd": {
-		"compilerOptions": {
-			"lib": ["es2017", "dom"]
-		}
-	},
-  "dependencies": {
-    "gifuct-js": "^2.0.0"
+    "compilerOptions": {
+      "lib": [
+        "es2017",
+        "dom"
+      ]
+    }
   },
-  "peerDependencies": {
-    "react": ">=16.13",
-    "react-dom": ">=16.13"
-  },
-  "keywords": [],
-  "author": "jeetiss",
-  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.13.8",
     "@babel/preset-env": "^7.13.8",
