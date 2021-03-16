@@ -156,12 +156,6 @@ const Canvas = ({ index, frames, width, height, fit, className, style }) => {
   }, [canvasRef, width, height]);
 
   useEffect(() => {
-    if (width && height) {
-      ctx.current.clearRect(0, 0, width, height);
-    }
-  }, [width, height, fit]);
-
-  useEffect(() => {
     const imageData = frames[index];
     if (imageData) {
       if (
@@ -171,7 +165,10 @@ const Canvas = ({ index, frames, width, height, fit, className, style }) => {
         temp.current.width = imageData.width;
         temp.current.height = imageData.height;
       }
-
+      if (width > 0 && height > 0) {
+        ctx.current.clearRect(0, 0, width, height);
+      }
+      
       tempCtx.current.putImageData(imageData, 0, 0);
       ctx.current.drawImage(
         temp.current,
