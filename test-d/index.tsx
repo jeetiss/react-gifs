@@ -18,6 +18,10 @@ expectError(usePlayback({ playing: 123 }, () => 0));
 
 // parser tests
 
+useParser("test", ({ width, height }) => {
+  expectType<number>(width)
+  expectType<number>(height)
+})
 useParser("str", () => 0);
 useParser(false, () => 0);
 useParser(undefined, () => 0);
