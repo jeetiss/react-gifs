@@ -23,6 +23,7 @@ const getBabelOptions = (
 });
 
 export default [
+  // build worker code
   {
     input: "src/worker.js",
     external: [],
@@ -33,12 +34,31 @@ export default [
     },
     plugins: [commonjs(), resolve(), terser()],
   },
+
+  // build cjs bundle
+  {
+    input: "src/index.js",
+    external,
+    output: {
+      format: "cjs",
+      file: "dist/index.js",
+      sourcemap: false,
+    },
+    plugins: [
+      babel(getBabelOptions()),
+      string({ include: "**/worker-source.js" }),
+      commonjs(),
+      resolve({ extensions }),
+    ],
+  },
+
+  // build esm bundle
   {
     input: "src/index.js",
     external,
     output: {
       format: "esm",
-      file: "dist/index.js",
+      file: "dist/index.esm.js",
       sourcemap: false,
     },
     plugins: [
