@@ -1,12 +1,12 @@
 {
   "name": "@react-gifs/tools",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Set of react tools for GIFs renering",
   "main": "dist/index.js",
-  "module": "dist/index.js",
+  "module": "dist/index.esm.js",
   "types": "index.d.ts",
   "files": [
-    "dist/index.js",
+    "dist/*",
     "index.d.ts"
   ],
   "repository": "jeetiss/react-gifs",
@@ -17,7 +17,7 @@
     "gif player",
     "gif parser"
   ],
-  "author": "Ivakhnenko Dmitry <jeetiss@ya.ru>",
+  "author": "Dmitry Ivakhnenko <jeetiss@ya.ru>",
   "dependencies": {
     "gifuct-js": "^2.0.0"
   },
@@ -45,31 +45,31 @@
       "limit": "5 KB"
     },
     {
-      "path": "dist/index.js",
+      "path": "dist/index.esm.js",
       "name": "useParser",
       "import": "{ useParser }",
       "limit": "5 KB"
     },
     {
-      "path": "dist/index.js",
+      "path": "dist/index.esm.js",
       "name": "useWorkerParser",
       "import": "{ useWorkerParser }",
       "limit": "5 KB"
     },
     {
-      "path": "dist/index.js",
+      "path": "dist/index.esm.js",
       "name": "usePlayerState",
       "import": "{ usePlayerState }",
       "limit": "5 KB"
     },
     {
-      "path": "dist/index.js",
+      "path": "dist/index.esm.js",
       "name": "usePlayback",
       "import": "{ usePlayback }",
       "limit": "5 KB"
     },
     {
-      "path": "dist/index.js",
+      "path": "dist/index.esm.js",
       "name": "Canvas",
       "import": "{ Canvas }",
       "limit": "5 KB"
