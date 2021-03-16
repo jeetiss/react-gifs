@@ -1,10 +1,34 @@
-import React, { StrictMode, useEffect } from "react";
+import React, { StrictMode, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { useControls } from "leva";
 import "./styles.css";
 
-
 import { Canvas, usePlayerState, useWorkerParser, usePlayback } from "..";
+
+const useEmojiFavicon = (emoji) => {
+  const faviconNode = useRef();
+
+  if (!faviconNode.current) {
+    faviconNode.current = document.createElement("link");
+    faviconNode.current.rel = "shortcut icon";
+  }
+
+  useEffect(() => {
+    document.head.appendChild(faviconNode.current);
+  }, [])
+
+  useEffect(() => {
+    const template = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <text y=".9em" font-size="90">${emoji}</text>
+      </svg>
+    `
+
+    faviconNode.current.href = `data:image/svg+xml,${decodeURI(template)}`
+  }, [emoji])
+}
+
+const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
 const Player = () => {
   const [state, update] = usePlayerState();
@@ -15,14 +39,14 @@ const Player = () => {
     },
 
     width: {
-      value: 500,
+      value: clamp(10, 500, window.innerWidth / 2),
       step: 10,
       min: 10,
       max: window.innerWidth,
     },
 
     height: {
-      value: 500,
+      value: clamp(10, 500, window.innerHeight / 2),
       step: 10,
       min: 10,
       max: window.innerHeight,
@@ -38,14 +62,17 @@ const Player = () => {
     "state",
     () => ({
       playing: { value: true },
-      index: { value: 0, step: 1, min: 0, max: 100 },
+      index: { value: 0, step: 1, min: 0, max: state.length - 1 },
       delays: {
         value: 60,
         min: 20,
         max: 200,
       },
     }),
+    [state.length]
   );
+
+  useEmojiFavicon(playing ? '▶️' : '⏸')
 
   // update playing
   useEffect(() => {
