@@ -19,9 +19,9 @@ expectError(usePlayback({ playing: 123 }, () => 0));
 // parser tests
 
 useParser("test", ({ width, height }) => {
-  expectType<number>(width)
-  expectType<number>(height)
-})
+  expectType<number>(width);
+  expectType<number>(height);
+});
 useParser("str", () => 0);
 useParser(false, () => 0);
 useParser(undefined, () => 0);
@@ -54,10 +54,10 @@ expectType(<Canvas index={0} frames={[]} width={100} height={300} />);
 
 expectType(<Canvas index={0} frames={[]} className="class" />);
 
-const idFrames = [new ImageData(2, 2)]
+const idFrames = [new ImageData(2, 2)];
 expectType(<Canvas index={0} frames={idFrames} className="class" />);
 
-const ibFrames = [new ImageBitmap()]
+const ibFrames = [new ImageBitmap()];
 expectError(<Canvas index={0} frames={ibFrames} className="class" />);
 
 expectError(React.createElement(Canvas, {}));
