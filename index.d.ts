@@ -20,7 +20,7 @@ declare function usePlayback(
   cb: () => void
 ): void;
 
-type ParserCallbackState = {
+type ParserCallbackArgs = {
   width: number;
   height: number;
   delays: number[];
@@ -28,7 +28,7 @@ type ParserCallbackState = {
 }
 
 type parserCallback = (
-  gifInfo: ParserCallbackState,
+  gifInfo: ParserCallbackArgs,
 ) => void;
 
 declare function useParser(

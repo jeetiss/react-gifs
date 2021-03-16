@@ -18,7 +18,7 @@ expectError(usePlayback({ playing: 123 }, () => 0));
 
 // parser tests
 
-useParser('hui', ({ width, height }) => {
+useParser("test", ({ width, height }) => {
   expectType<number>(width)
   expectType<number>(height)
 })
