@@ -1,4 +1,10 @@
-import React, { StrictMode, useEffect, useRef } from "react";
+import React, {
+  StrictMode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import ReactDOM from "react-dom";
 import { useControls } from "leva";
 import "./styles.css";
@@ -28,35 +34,76 @@ const useEmojiFavicon = (emoji) => {
   }, [emoji]);
 };
 
+const setQuery = (key, value) => {
+  const search = new URLSearchParams(location.search.slice(1));
+  search.set(key, value);
+
+  window.history.pushState(
+    null,
+    null,
+    `${location.origin}${location.pathname}?${search}`
+  );
+};
+
+const getQuery = (key) => {
+  const url = new URLSearchParams(location.search.slice(1));
+  return url.get(key);
+};
+
+const useQueryState = (initial, key) => {
+  const [state, setState] = useState(() => {
+    const value = getQuery(key);
+    return value || initial;
+  });
+
+  const update = useCallback(
+    (value) => {
+      setQuery(key, value);
+      setState(value);
+    },
+    [setState]
+  );
+
+  return [state, update];
+};
+
 const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
 const Player = () => {
+  const [qsrc, setSrc] = useQueryState(
+    "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif",
+    "gif"
+  );
   const [state, update] = usePlayerState();
 
   const { src, width, height, fit } = useControls({
     src: {
-      value: "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif",
+      value: qsrc,
     },
 
     width: {
-      value: clamp(10, 500, window.innerWidth / 2),
+      value: clamp(10, 500, window.innerWidth * 0.8),
       step: 10,
       min: 10,
       max: window.innerWidth,
     },
 
     height: {
-      value: clamp(10, 500, window.innerHeight / 2),
+      value: clamp(10, 500, window.innerHeight * 0.8),
       step: 10,
       min: 10,
       max: window.innerHeight,
     },
 
     fit: {
-      value: "fill",
+      value: "contain",
       options: ["fill", "contain", "cover"],
     },
   });
+
+  useEffect(() => {
+    setSrc(src);
+  }, [src]);
 
   const [{ playing, index, delays }, set] = useControls(
     "state",
@@ -105,7 +152,6 @@ const Player = () => {
       width={width || state.width}
       height={height || state.height}
       fit={fit}
-      style={{ border: "1px solid #e2e2e2" }}
     />
   );
 };
