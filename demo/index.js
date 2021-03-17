@@ -15,18 +15,18 @@ const useEmojiFavicon = (emoji) => {
 
   useEffect(() => {
     document.head.appendChild(faviconNode.current);
-  }, [])
+  }, []);
 
   useEffect(() => {
     const template = `
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
         <text y=".9em" font-size="90">${emoji}</text>
       </svg>
-    `
+    `;
 
-    faviconNode.current.href = `data:image/svg+xml,${decodeURI(template)}`
-  }, [emoji])
-}
+    faviconNode.current.href = `data:image/svg+xml,${decodeURI(template)}`;
+  }, [emoji]);
+};
 
 const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
@@ -61,7 +61,7 @@ const Player = () => {
   const [{ playing, index, delays }, set] = useControls(
     "state",
     () => ({
-      playing: { value: true },
+      playing: { value: state.loaded ? state.playing : true },
       index: { value: 0, step: 1, min: 0, max: state.length - 1 },
       delays: {
         value: 60,
@@ -72,7 +72,7 @@ const Player = () => {
     [state.length]
   );
 
-  useEmojiFavicon(playing ? '▶️' : '⏸')
+  useEmojiFavicon(playing ? "▶️" : "⏸");
 
   // update playing
   useEffect(() => {
