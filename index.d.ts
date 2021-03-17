@@ -21,6 +21,7 @@ declare function usePlayback(
 ): void;
 
 type ParserCallbackArgs = {
+  loaded: true;
   width: number;
   height: number;
   delays: number[];

@@ -25,6 +25,7 @@ export const parse = (src, { signal }) =>
 
       return {
         ...options,
+        loaded: true,
         delays: frames.map((frame) => frame.delay),
         frames: readyFrames,
       };

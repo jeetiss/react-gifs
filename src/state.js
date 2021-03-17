@@ -5,14 +5,19 @@ const reducer = (state, action = {}) => {
     action = action(state);
   }
 
+  const isLoadedChange = action.loaded && state.loaded !== action.loaded
   const { playing, ...rest } = action;
   const copy = { ...state, ...rest };
 
+  if (isLoadedChange) {
+    Object.assign(copy, {
+      playing: copy.autoPlay && copy.loaded,
+    });
+  }
+  
   if (action.delays != null || action.frames != null) {
     Object.assign(copy, {
       length: copy.frames.length,
-      loaded: !!copy.frames.length,
-      playing: copy.autoPlay && !!copy.frames.length,
     });
 
     if (process.env.NODE_ENV !== "production") {
