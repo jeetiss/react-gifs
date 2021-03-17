@@ -70,3 +70,22 @@ it("reducer allow create toggle function", () => {
     initState
   );
 });
+
+it("change of delays or frames doesn't trigger playing state", () => {
+  let state = {
+    autoPlay: true,
+    playing: false,
+    loaded: true,
+    index: 0,
+    length: 1,
+    delays: [1],
+    frames: [1],
+  };
+
+  const update = { delays: [2], frames: [2] };
+  expect(reducer(state, update)).toStrictEqual({
+    ...state,
+    delays: [2],
+    frames: [2],
+  });
+});
