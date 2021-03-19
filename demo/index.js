@@ -6,7 +6,7 @@ import React, {
   useState,
 } from "react";
 import ReactDOM from "react-dom";
-import { useControls } from "leva";
+import { useControls, buttonGroup } from "leva";
 import "./styles.css";
 
 import { Canvas, usePlayerState, useWorkerParser, usePlayback } from "..";
@@ -76,10 +76,29 @@ const Player = () => {
   );
   const [state, update] = usePlayerState();
 
-  const { src, width, height, fit } = useControls({
+  const [{ src, width, height, fit }, setsrc] = useControls(() => ({
     src: {
       value: qsrc,
     },
+
+    "": buttonGroup({
+      js: () =>
+        setsrc({
+          src: "https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif",
+        }),
+      transparency: () =>
+        setsrc({
+          src: "https://media.giphy.com/media/xUA7b5Cb1muGhlI1fa/giphy.gif",
+        }),
+      puppy: () =>
+        setsrc({
+          src: "https://media.giphy.com/media/NujdeXCfWljri/giphy.gif",
+        }),
+      bts: () =>
+        setsrc({
+          src: "https://media.giphy.com/media/ZBoHqyxmhv85ff3qOI/giphy.gif",
+        }),
+    }),
 
     width: {
       value: clamp(10, 500, window.innerWidth * 0.8),
@@ -99,7 +118,7 @@ const Player = () => {
       value: "contain",
       options: ["fill", "contain", "cover"],
     },
-  });
+  }));
 
   useEffect(() => {
     setSrc(src);
@@ -109,7 +128,12 @@ const Player = () => {
     "state",
     () => ({
       playing: { value: state.loaded ? state.playing : true },
-      index: { value: 0, step: 1, min: 0, max: state.length - 1 },
+      index: {
+        value: state.index ? clamp(0, state.index, state.length - 1) : 0,
+        step: 1,
+        min: 0,
+        max: state.length - 1,
+      },
       delays: {
         value: 60,
         min: 20,
