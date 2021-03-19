@@ -11,6 +11,42 @@ import "./styles.css";
 
 import { Canvas, usePlayerState, useWorkerParser, usePlayback } from "..";
 
+const Loader = () => (
+  <div style={{ position: "absolute", top: 8, left: 8 }}>
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      stroke="#007bff"
+    >
+      <g fill="none" fillRule="evenodd">
+        <g transform="translate(1 1)" strokeWidth="2px">
+          <circle strokeOpacity=".5" cx="12" cy="12" r="10"></circle>
+          <path d="M22 12 c 0 -6.5 -5.5 -10 -10 -10">
+            <animateTransform
+              attributeName="transform"
+              type="rotate"
+              from="0 12 12"
+              to="360 12 12"
+              dur="1s"
+              repeatCount="indefinite"
+            />
+          </path>
+        </g>
+      </g>
+    </svg>
+  </div>
+);
+
+<svg
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+></svg>;
+
 const useEmojiFavicon = (emoji) => {
   const faviconNode = useRef();
 
@@ -70,6 +106,7 @@ const useQueryState = (initial, key) => {
 const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
 const Player = () => {
+  const [loading, setLoading] = useState(true);
   const [qsrc, setSrc] = useQueryState(
     "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif",
     "gif"
@@ -160,8 +197,15 @@ const Player = () => {
     update(({ frames }) => ({ delays: frames.map(() => delays) }));
   }, [delays]);
 
+  useEffect(() => {
+    if (typeof src === "string") {
+      setLoading(true);
+    }
+  }, [src]);
+
   useWorkerParser(src, (info) => {
     // set initial delay
+    setLoading(false);
     update({ ...info, delays: info.frames.map(() => delays) });
   });
 
@@ -170,13 +214,16 @@ const Player = () => {
   });
 
   return (
-    <Canvas
-      index={state.index}
-      frames={state.frames}
-      width={width || state.width}
-      height={height || state.height}
-      fit={fit}
-    />
+    <>
+      {loading && <Loader />}
+      <Canvas
+        index={state.index}
+        frames={state.frames}
+        width={width || state.width}
+        height={height || state.height}
+        fit={fit}
+      />
+    </>
   );
 };
 
