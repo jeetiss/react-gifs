@@ -21,7 +21,7 @@ const Loader = () => (
       stroke="#007bff"
     >
       <g fill="none" fillRule="evenodd">
-        <g transform="translate(1 1)" strokeWidth="2px">
+        <g transform="translate(1 1)" strokeWidth="2.5px">
           <circle strokeOpacity=".5" cx="12" cy="12" r="10"></circle>
           <path d="M22 12 c 0 -6.5 -5.5 -10 -10 -10">
             <animateTransform
