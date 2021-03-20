@@ -1,15 +1,15 @@
 import React, {
   StrictMode,
-  useCallback,
   useEffect,
+  useReducer,
   useRef,
-  useState,
+  useMemo,
 } from "react";
 import ReactDOM from "react-dom";
 import { useControls, buttonGroup } from "leva";
 import "./styles.css";
 
-import { Canvas, usePlayerState, useWorkerParser, usePlayback } from "..";
+import { Canvas, useWorkerParser, usePlayback } from "..";
 
 const Loader = () => (
   <div style={{ position: "absolute", top: 8, left: 8 }}>
@@ -38,14 +38,6 @@ const Loader = () => (
     </svg>
   </div>
 );
-
-<svg
-  width="24"
-  height="24"
-  viewBox="0 0 24 24"
-  fill="none"
-  xmlns="http://www.w3.org/2000/svg"
-></svg>;
 
 const useEmojiFavicon = (emoji) => {
   const faviconNode = useRef();
@@ -86,36 +78,20 @@ const getQuery = (key) => {
   return url.get(key);
 };
 
-const useQueryState = (initial, key) => {
-  const [state, setState] = useState(() => {
-    const value = getQuery(key);
-    return value || initial;
-  });
-
-  const update = useCallback(
-    (value) => {
-      setQuery(key, value);
-      setState(value);
-    },
-    [setState]
-  );
-
-  return [state, update];
-};
-
 const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
 const Player = () => {
-  const [loading, setLoading] = useState(true);
-  const [qsrc, setSrc] = useQueryState(
-    "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif",
-    "gif"
-  );
-  const [state, update] = usePlayerState();
+  const [state, update] = useReducer((a, b) => ({ ...a, ...b }), {
+    loaded: false,
+    frames: [],
+    length: 1,
+  });
 
   const [{ src, width, height, fit }, setsrc] = useControls(() => ({
     src: {
-      value: qsrc,
+      value:
+        getQuery("gif") ||
+        "https://media.giphy.com/media/5VKbvrjxpVJCM/giphy.gif",
     },
 
     "": buttonGroup({
@@ -158,20 +134,20 @@ const Player = () => {
   }));
 
   useEffect(() => {
-    setSrc(src);
+    setQuery("gif", src);
   }, [src]);
 
-  const [{ playing, index, delays }, set] = useControls(
+  const [{ playing, index, delay }, set] = useControls(
     "state",
     () => ({
-      playing: { value: state.loaded ? state.playing : true },
+      playing: { value: true },
       index: {
-        value: state.index ? clamp(0, state.index, state.length - 1) : 0,
+        value: 0,
         step: 1,
         min: 0,
         max: state.length - 1,
       },
-      delays: {
+      delay: {
         value: 60,
         min: 20,
         max: 200,
@@ -182,45 +158,39 @@ const Player = () => {
 
   useEmojiFavicon(playing ? "▶️" : "⏸");
 
-  // update playing
-  useEffect(() => {
-    update({ playing });
-  }, [playing]);
-
-  // update index
-  useEffect(() => {
-    update({ index });
-  }, [index]);
-
-  // update delays
-  useEffect(() => {
-    update(({ frames }) => ({ delays: frames.map(() => delays) }));
-  }, [delays]);
-
   useEffect(() => {
     if (typeof src === "string") {
-      setLoading(true);
+      update({ loaded: false });
     }
   }, [src]);
 
   useWorkerParser(src, (info) => {
     // set initial delay
-    setLoading(false);
-    update({ ...info, delays: info.frames.map(() => delays) });
+    update({ loaded: true, frames: info.frames, length: info.frames.length });
+    set({
+      index: clamp(0, index, info.frames.length - 1),
+      delay:
+        info.delays.reduce((sum, next) => sum + next, 0) / info.delays.length,
+    });
   });
 
-  usePlayback(state, () => {
-    set({ index: (state.index + 1) % state.length });
+  const delays = useMemo(() => state.frames.map(() => delay), [
+    state.frames,
+    delay,
+  ]);
+
+  usePlayback({ delays, index, playing }, () => {
+    set({ index: (index + 1) % state.length });
   });
 
   return (
     <>
-      {loading && <Loader />}
+      {!state.loaded && <Loader />}
       <Canvas
-        index={state.index}
+        index={index}
         frames={state.frames}
-        width={width || state.width}
-        height={height || state.height}
+        width={width}
+        height={height}
         fit={fit}
       />
     </>
