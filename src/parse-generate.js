@@ -1,9 +1,25 @@
 import { parseGIF, decompressFrames } from "gifuct-js";
 
+const validateAndFix = (gif) => {
+  let currentGce = null;
+  for (const frame of gif.frames) {
+    currentGce = frame.gce ? frame.gce : currentGce;
+
+    // fix loosing graphic control extension for same frames
+    if ("image" in frame && !("gce" in frame)) {
+      frame.gce = currentGce;
+    }
+  }
+};
+
 export const parse = (src, { signal }) =>
   fetch(src, { signal })
     .then((resp) => resp.arrayBuffer())
     .then((buffer) => parseGIF(buffer))
+    .then((gif) => {
+      validateAndFix(gif);
+      return gif;
+    })
     .then((gif) =>
       Promise.all([
         decompressFrames(gif, false),
