@@ -88,6 +88,7 @@ const Player = () => {
 
   const [state, update] = useReducer((a, b) => ({ ...a, ...b }), {
     loaded: false,
+    gifDelays: [],
     frames: [],
     length: 1,
   });
@@ -104,7 +105,7 @@ const Player = () => {
         setsrc({
           src: "https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif",
         }),
-      transparency: () =>
+      transparent: () =>
         setsrc({
           src: "https://media.giphy.com/media/xUA7b5Cb1muGhlI1fa/giphy.gif",
         }),
@@ -147,7 +148,7 @@ const Player = () => {
     setsrc({ src });
   }, [search]);
 
-  const [{ playing, index, delay }, set] = useControls(
+  const [{ playing, index, speed }, set] = useControls(
     "state",
     () => ({
       playing: { value: true },
@@ -157,11 +158,19 @@ const Player = () => {
         min: 0,
         max: state.length - 1,
       },
-      delay: {
-        value: 60,
-        min: 20,
-        max: 200,
+      speed: {
+        value: 1,
+        min: 0.1,
+        step: 0.01,
+        max: 5,
       },
+    
+      " ": buttonGroup({
+        "0.25x": () => set({ speed: 0.25 }),
+        "1.0x": () => set({ speed: 1.0 }),
+        "3.0x": () => set({ speed: 3.0 }),
+        "5.0x": () => set({ speed: 5.0 }),
+      }),
     }),
     [state.length]
   );
@@ -176,17 +185,18 @@ const Player = () => {
 
   useWorkerParser(src, (info) => {
     // set initial delay
-    update({ loaded: true, frames: info.frames, length: info.frames.length });
-    set({
-      index: clamp(0, index, info.frames.length - 1),
-      delay:
-        info.delays.reduce((sum, next) => sum + next, 0) / info.delays.length,
+    update({
+      loaded: true,
+      frames: info.frames,
+      length: info.frames.length,
+      gifDelays: info.delays,
     });
+    set({ index: clamp(0, index, info.frames.length - 1) });
   });
 
-  const delays = useMemo(() => state.frames.map(() => delay), [
-    state.frames,
-    delay,
+  const delays = useMemo(() => state.gifDelays.map((delay) => delay / speed), [
+    state.gifDelays,
+    speed,
   ]);
 
   usePlayback({ delays, index, playing }, () => {
