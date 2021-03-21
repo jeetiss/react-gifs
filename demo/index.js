@@ -84,7 +84,8 @@ const getQuery = (key) => {
 const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
 const Player = () => {
-  const [search] = useLocation();
+  const { search } = useLocation();
+
   const [state, update] = useReducer((a, b) => ({ ...a, ...b }), {
     loaded: false,
     frames: [],

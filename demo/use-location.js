@@ -57,7 +57,12 @@ export default ({ base = "" } = {}) => {
     [base]
   );
 
-  return [pathAndSearch.search, navigate];
+  const locationApi = [pathAndSearch.path, navigate]
+  locationApi.path = pathAndSearch.path
+  locationApi.search = pathAndSearch.search
+  locationApi.update = update
+
+  return locationApi;
 };
 
 // While History API does have `popstate` event, the only
