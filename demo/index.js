@@ -7,6 +7,8 @@ import React, {
 } from "react";
 import ReactDOM from "react-dom";
 import { useControls, buttonGroup } from "leva";
+import useLocation from "./use-location";
+
 import "./styles.css";
 
 import { Canvas, useWorkerParser, usePlayback } from "..";
@@ -64,6 +66,7 @@ const useEmojiFavicon = (emoji) => {
 
 const setQuery = (key, value) => {
   const search = new URLSearchParams(location.search.slice(1));
+  if (search.get(key) === value) return;
   search.set(key, value);
 
   window.history.pushState(
@@ -81,6 +84,7 @@ const getQuery = (key) => {
 const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
 const Player = () => {
+  const [search] = useLocation();
   const [state, update] = useReducer((a, b) => ({ ...a, ...b }), {
     loaded: false,
     frames: [],
@@ -136,6 +140,11 @@ const Player = () => {
   useEffect(() => {
     setQuery("gif", src);
   }, [src]);
+
+  useEffect(() => {
+    const src = getQuery("gif");
+    setsrc({ src });
+  }, [search]);
 
   const [{ playing, index, delay }, set] = useControls(
     "state",
