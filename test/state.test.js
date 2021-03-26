@@ -1,4 +1,4 @@
-import { reducer, initializer } from "./state";
+import { reducer, initializer } from "../src/state";
 
 const defaultState = {
   autoPlay: true,

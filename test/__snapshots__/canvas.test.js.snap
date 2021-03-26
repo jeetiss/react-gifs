@@ -1,0 +1,90 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`works as expected 1`] = `
+Array [
+  Object {
+    "props": Object {
+      "height": 20,
+      "width": 20,
+      "x": 0,
+      "y": 0,
+    },
+    "transform": Array [
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+    ],
+    "type": "clearRect",
+  },
+  Object {
+    "props": Object {
+      "dHeight": 20,
+      "dWidth": 20,
+      "dx": 0,
+      "dy": 0,
+      "img": <canvas
+        height="20"
+        width="20"
+      />,
+      "sHeight": 10,
+      "sWidth": 10,
+      "sx": 0,
+      "sy": 0,
+    },
+    "transform": Array [
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+    ],
+    "type": "drawImage",
+  },
+  Object {
+    "props": Object {
+      "height": 20,
+      "width": 20,
+      "x": 0,
+      "y": 0,
+    },
+    "transform": Array [
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+    ],
+    "type": "clearRect",
+  },
+  Object {
+    "props": Object {
+      "dHeight": 20,
+      "dWidth": 20,
+      "dx": 0,
+      "dy": 0,
+      "img": <canvas
+        height="20"
+        width="20"
+      />,
+      "sHeight": 20,
+      "sWidth": 20,
+      "sx": 0,
+      "sy": 0,
+    },
+    "transform": Array [
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+    ],
+    "type": "drawImage",
+  },
+]
+`;
