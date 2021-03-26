@@ -85,7 +85,6 @@ const clamp = (min, value, max) => Math.min(max, Math.max(min, value));
 
 const Player = () => {
   const { search } = useLocation();
-
   const [state, update] = useReducer((a, b) => ({ ...a, ...b }), {
     loaded: false,
     gifDelays: [],
@@ -93,7 +92,7 @@ const Player = () => {
     length: 1,
   });
 
-  const [{ src, width, height, fit }, setsrc] = useControls(() => ({
+  const [{ src }, setsrc] = useControls(() => ({
     src: {
       value:
         getQuery("gif") ||
@@ -118,7 +117,9 @@ const Player = () => {
           src: "https://media.giphy.com/media/ZBoHqyxmhv85ff3qOI/giphy.gif",
         }),
     }),
+  }));
 
+  const { width, height, fit } = useControls("size", {
     width: {
       value: clamp(10, 500, window.innerWidth * 0.8),
       step: 10,
@@ -137,7 +138,7 @@ const Player = () => {
       value: "contain",
       options: ["fill", "contain", "cover"],
     },
-  }));
+  });
 
   useEffect(() => {
     setQuery("gif", src);
@@ -148,11 +149,11 @@ const Player = () => {
     setsrc({ src });
   }, [search]);
 
-  const [{ playing, index, speed }, set] = useControls(
-    "state",
+  const [{ playing, position: index, speed }, set] = useControls(
+    "playback",
     () => ({
       playing: { value: true },
-      index: {
+      position: {
         value: 0,
         step: 1,
         min: 0,
@@ -164,7 +165,7 @@ const Player = () => {
         step: 0.01,
         max: 5,
       },
-    
+
       " ": buttonGroup({
         "0.25x": () => set({ speed: 0.25 }),
         "1.0x": () => set({ speed: 1.0 }),
@@ -191,7 +192,7 @@ const Player = () => {
       length: info.frames.length,
       gifDelays: info.delays,
     });
-    set({ index: clamp(0, index, info.frames.length - 1) });
+    set({ position: clamp(0, index, info.frames.length - 1) });
   });
 
   const delays = useMemo(() => state.gifDelays.map((delay) => delay / speed), [
@@ -200,7 +201,7 @@ const Player = () => {
   ]);
 
   usePlayback({ delays, index, playing }, () => {
-    set({ index: (index + 1) % state.length });
+    set({ position: (index + 1) % state.length });
   });
 
   return (
