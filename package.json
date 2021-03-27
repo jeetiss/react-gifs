@@ -99,6 +99,7 @@
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@size-limit/preset-small-lib": "^4.9.2",
     "@testing-library/react": "^11.2.5",
+    "@testing-library/react-hooks": "^5.1.0",
     "@types/react": "^17.0.3",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "gh-pages": "^3.1.0",
@@ -106,6 +107,7 @@
     "jest-canvas-mock": "^2.3.1",
     "jest-esm-jsx-transform": "^1.0.0",
     "leva": "^0.7.2",
+    "msw": "^0.28.0",
     "parcel-bundler": "^1.12.4",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
@@ -113,6 +115,7 @@
     "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-terser": "^7.0.2",
     "size-limit": "^4.9.2",
-    "tsd": "^0.14.0"
+    "tsd": "^0.14.0",
+    "whatwg-fetch": "^3.6.2"
   }
 }

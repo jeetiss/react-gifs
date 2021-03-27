@@ -1,4 +1,4 @@
-import { parse } from "./parse-generate";
+import { parse } from "../parse-generate";
 
 const abortMap = new Map();
 

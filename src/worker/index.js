@@ -1,4 +1,4 @@
-import code from './worker-source'
+import code from './source'
 
 export default function WorkerFactory (options) {
   const blob = new Blob([code], { type: 'application/javascript' });

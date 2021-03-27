@@ -14,7 +14,7 @@ const getBabelOptions = (
   babelHelpers: "bundled",
   extensions,
   include: ["src/**/*", "**/node_modules/**"],
-  exclude: ["src/worker-source.js"],
+  exclude: ["src/worker/source.js"],
   presets: [
     ["@babel/preset-env", { loose: true, modules: false, targets }],
     "@babel/preset-react",
@@ -25,11 +25,11 @@ const getBabelOptions = (
 export default [
   // build worker code
   {
-    input: "src/worker.js",
+    input: "src/worker/worker.js",
     external: [],
     output: {
       format: "esm",
-      file: "src/worker-source.js",
+      file: "src/worker/source.js",
       sourcemap: false,
     },
     plugins: [commonjs(), resolve(), terser()],
@@ -46,7 +46,7 @@ export default [
     },
     plugins: [
       babel(getBabelOptions()),
-      string({ include: "**/worker-source.js" }),
+      string({ include: "**/worker/source.js" }),
       commonjs(),
       resolve({ extensions }),
     ],
@@ -63,7 +63,7 @@ export default [
     },
     plugins: [
       babel(getBabelOptions()),
-      string({ include: "**/worker-source.js" }),
+      string({ include: "**/worker/source.js" }),
       commonjs(),
       resolve({ extensions }),
     ],
