@@ -1,4 +1,4 @@
-// add polyfills for image data and fetch 
+// add polyfills for image data and fetch
 import "whatwg-fetch";
 import "jest-canvas-mock";
 
@@ -8,10 +8,15 @@ import { useParser } from "../src/hooks";
 
 setup();
 
-it("works with one frame gif", async () => {
-  const result = await new Promise((resolve) => {
-    renderHook(() => useParser("/image", (info) => resolve(info)));
+const renderHookAsync = (callback) =>
+  new Promise((resolve) => {
+    const result = renderHook(() =>
+      callback((val) => resolve({ ...result, result: val }))
+    );
   });
+
+it("works with one frame gif", async () => {
+  const { result } = await renderHookAsync((done) => useParser("/image", done));
 
   expect(result.width).toBe(10);
   expect(result.height).toBe(10);
@@ -20,9 +25,9 @@ it("works with one frame gif", async () => {
 });
 
 it("works with animated gif", async () => {
-  const result = await new Promise((resolve) => {
-    renderHook(() => useParser("/animation", (info) => resolve(info)));
-  });
+  const { result } = await renderHookAsync((done) =>
+    useParser("/animation", done)
+  );
 
   expect(result.width).toBe(11);
   expect(result.height).toBe(29);
