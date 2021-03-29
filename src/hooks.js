@@ -1,44 +1,35 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useCallback,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useCallback } from "react";
 
 import Worker from "./worker";
 import { genearate, parse } from "./parse-generate";
 
-const createGlobalRef = (initial = null) => {
-  const context = createContext({ current: initial });
-  const useGlobalConstant = () => useContext(context);
-
-  return useGlobalConstant;
-};
-
 const createSingleton = (constructor, destructor) => {
-  const useGlobal = createGlobalRef();
-
+  const ref = {};
   return () => {
-    const ref = useGlobal();
-
     if (!ref.instance) {
       ref.instance = constructor();
     }
 
     useLayoutEffect(() => {
-      ref.usageCount = (ref.usageCount || 0) + 1;
+      if (ref.timeout) {
+        clearTimeout(ref.timeout);
+        delete ref.timeout;
+      } else {
+        ref.usageCount = (ref.usageCount || 0) + 1;
+      }
 
       return () => {
-        ref.usageCount = ref.usageCount - 1;
+        ref.timeout = setTimeout(() => {
+          ref.usageCount = ref.usageCount - 1;
 
-        if (ref.usageCount === 0) {
-          destructor && destructor(ref.instance);
-          ref.instance = undefined;
-        }
+          if (ref.usageCount === 0) {
+            destructor && destructor(ref.instance);
+            delete ref.instance;
+            delete ref.timeout;
+          }
+        });
       };
-    }, [ref]);
+    }, [ref, destructor]);
 
     return ref.instance;
   };
