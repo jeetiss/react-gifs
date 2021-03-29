@@ -1,0 +1,22 @@
+name: Run Tests & Linters
+
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      FORCE_COLOR: true
+
+    steps:
+      - uses: actions/checkout@v2
+        uses: actions/setup-node@v1
+      - name: Install Dependencies
+        run: npm install
+      - name: Run Jest
+        run: npm test
