@@ -75,7 +75,7 @@ const useCanvasSingleton = createSingleton(() => {
   canvas.width = 0;
   canvas.height = 0;
 
-  return [canvas, ctx];
+  return ctx;
 });
 
 export const Canvas = forwardRef(function Canvas(
@@ -84,7 +84,7 @@ export const Canvas = forwardRef(function Canvas(
 ) {
   const canvasRef = useRef();
   const ctx = useRef();
-  const [temp, tempCtx] = useCanvasSingleton();
+  const tempCtx = useCanvasSingleton();
 
   useLayoutEffect(() => {
     if (canvasRef.current) {
@@ -102,17 +102,23 @@ export const Canvas = forwardRef(function Canvas(
   useEffect(() => {
     const imageData = frames[index];
     if (imageData) {
-      if (temp.width < imageData.width || temp.height < imageData.height) {
-        temp.width = imageData.width;
-        temp.height = imageData.height;
+      if (
+        tempCtx.canvas.width < imageData.width ||
+        tempCtx.canvas.height < imageData.height
+      ) {
+        tempCtx.canvas.width = imageData.width;
+        tempCtx.canvas.height = imageData.height;
       }
       if (width > 0 && height > 0) {
         ctx.current.clearRect(0, 0, width, height);
-        tempCtx.clearRect(0, 0, temp.width, temp.height);
+        tempCtx.clearRect(0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
       }
 
       tempCtx.putImageData(imageData, 0, 0);
-      ctx.current.drawImage(temp, ...calcArgs(fit, imageData, { width, height }));
+      ctx.current.drawImage(
+        tempCtx.canvas,
+        ...calcArgs(fit, imageData, { width, height })
+      );
     }
   }, [index, frames, width, height, fit]);
 
