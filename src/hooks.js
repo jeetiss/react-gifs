@@ -10,29 +10,38 @@ import {
 import Worker from "./worker";
 import { genearate, parse } from "./parse-generate";
 
-const globalContext = createContext({});
+const createGlobalRef = (initial = null) => {
+  const context = createContext({ current: initial });
+  const useGlobalConstant = () => useContext(context);
 
-const useSingleWorker = (constructor, destructor) => {
-  const globalRef = useContext(globalContext);
+  return useGlobalConstant;
+};
 
-  if (!globalRef.worker) {
-    globalRef.worker = constructor();
-  }
+const createSingleton = (constructor, destructor) => {
+  const useGlobal = createGlobalRef();
 
-  useLayoutEffect(() => {
-    globalRef.usageCount = (globalRef.usageCount || 0) + 1;
+  return () => {
+    const ref = useGlobal();
 
-    return () => {
-      globalRef.usageCount = globalRef.usageCount - 1;
+    if (!ref.instance) {
+      ref.instance = constructor();
+    }
 
-      if (globalRef.usageCount === 0) {
-        destructor(globalRef.worker);
-        globalRef.worker = undefined;
-      }
-    };
-  }, [globalRef]);
+    useLayoutEffect(() => {
+      ref.usageCount = (ref.usageCount || 0) + 1;
 
-  return globalRef.worker;
+      return () => {
+        ref.usageCount = ref.usageCount - 1;
+
+        if (ref.usageCount === 0) {
+          destructor && destructor(ref.instance);
+          ref.instance = undefined;
+        }
+      };
+    }, [ref]);
+
+    return ref.instance;
+  };
 };
 
 const useUpdatedRef = (value) => {
@@ -102,13 +111,14 @@ const useParser = (src, callback) => {
   );
 };
 
+const useWorkerSingleton = createSingleton(
+  () => new Worker(),
+  (worker) => worker.terminate()
+);
+
 const useWorkerParser = (src, callback) => {
   const cb = useEventCallback(callback);
-
-  const worker = useSingleWorker(
-    () => new Worker(),
-    (worker) => worker.terminate()
-  );
+  const worker = useWorkerSingleton();
 
   useEffect(() => {
     if (typeof src === "string") {
@@ -145,4 +155,4 @@ const usePlayback = (state, updater) => {
   }, !state.playing);
 };
 
-export { useRaf, useParser, useWorkerParser, usePlayback };
+export { useRaf, createSingleton, useParser, useWorkerParser, usePlayback };
