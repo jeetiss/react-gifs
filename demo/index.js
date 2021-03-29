@@ -11,7 +11,7 @@ import useLocation from "./use-location";
 
 import "./styles.css";
 
-import { Canvas, useWorkerParser, usePlayback } from "..";
+import { Canvas, useWorkerParser, usePlayback, usePlayerState } from "..";
 
 const Loader = () => (
   <div style={{ position: "absolute", top: 8, left: 8 }}>
@@ -214,6 +214,42 @@ const Player = () => {
         height={height}
         fit={fit}
       />
+    </>
+  );
+};
+
+const Gif = ({ src }) => {
+  const [state, update] = usePlayerState();
+
+  useWorkerParser(src, update);
+  usePlayback(state, () => update(({ index }) => ({ index: index + 1 })));
+
+  return <Canvas {...state} />;
+};
+
+const Gifs = () => (
+  <>
+    <Gif src="https://media.giphy.com/media/xT9IgzoKnwFNmISR8I/giphy.gif" />
+    <Gif src="https://media.giphy.com/media/xUA7b5Cb1muGhlI1fa/giphy.gif" />
+    <Gif src="https://media.giphy.com/media/NujdeXCfWljri/giphy.gif" />
+    <Gif src="https://media.giphy.com/media/ZBoHqyxmhv85ff3qOI/giphy.gif" />
+  </>
+);
+
+const Toggle = () => {
+  const [enable, tgl] = useReducer((v) => !v, true);
+  const [variant, toggle] = useReducer((v) => !v);
+
+  return (
+    <>
+      <button onClick={tgl}>enable</button>
+      <button onClick={toggle}>toggle</button>
+      {enable &&
+        (variant ? (
+          <Gif src="https://media.giphy.com/media/NujdeXCfWljri/giphy.gif" />
+        ) : (
+          <Gif src="https://media.giphy.com/media/ZBoHqyxmhv85ff3qOI/giphy.gif" />
+        ))}
     </>
   );
 };
