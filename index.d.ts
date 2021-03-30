@@ -1,4 +1,4 @@
-import { FC, CSSProperties } from "react";
+import { FC, ForwardedRef, CSSProperties } from "react";
 
 type State = {
   width?: number;
@@ -47,6 +47,7 @@ declare const Canvas: FC<{
   frames: ImageData[];
   width?: number;
   height?: number;
+  ref?: ForwardedRef<HTMLCanvasElement>;
   fit?: "cover" | "contain" | "fill";
   className?: string;
   style?: CSSProperties;

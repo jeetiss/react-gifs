@@ -94,5 +94,16 @@ expectError(usePlayback(pstate, update));
 
 expectType(<Canvas {...pstate} />);
 
+const ref = React.createRef<HTMLCanvasElement>();
+expectType(<Canvas {...pstate} ref={ref} />);
+expectType(
+  <Canvas
+    {...pstate}
+    ref={(ref) => {
+      expectType<HTMLCanvasElement | null>(ref);
+    }}
+  />
+);
+
 useWorkerParser("str", update);
 useParser("str", update);
