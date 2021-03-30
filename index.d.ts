@@ -20,17 +20,17 @@ declare function usePlayback(
   cb: () => void
 ): void;
 
-type ParserCallbackArgs = {
-  loaded: true;
-  width: number;
-  height: number;
-  delays: number[];
-  frames: ImageData[];
-}
+type ParserCallbackArgs =
+  | {
+      loaded: true;
+      width: number;
+      height: number;
+      delays: number[];
+      frames: ImageData[];
+    }
+  | { loaded: true; error: Error };
 
-type parserCallback = (
-  gifInfo: ParserCallbackArgs,
-) => void;
+type parserCallback = (gifInfo: ParserCallbackArgs) => void;
 
 declare function useParser(
   str: string | boolean | undefined | null,

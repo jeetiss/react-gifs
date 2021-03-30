@@ -95,7 +95,8 @@ const useParser = (src, callback) => {
       if (typeof src === "string") {
         parse(src, { signal: controller.signal })
           .then((raw) => genearate(raw))
-          .then((info) => cb(info));
+          .then((info) => cb(info))
+          .catch((error) => cb({ error, loaded: true }));
       }
     },
     [src]
@@ -116,7 +117,8 @@ const useWorkerParser = (src, callback) => {
       const handler = (e) => {
         const message = e.data || e;
         if (message.src === src) {
-          cb(genearate(message));
+          const data = message.error ? message : genearate(message);
+          cb(data);
         }
       };
 

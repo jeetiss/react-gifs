@@ -18,10 +18,13 @@ expectError(usePlayback({ playing: 123 }, () => 0));
 
 // parser tests
 
-useParser("test", ({ width, height, loaded }) => {
-  expectType<number>(width);
-  expectType<number>(height);
-  expectType<true>(loaded);
+useParser("test", (info) => {
+  if (!("error" in info)) {
+    const { width, height, loaded } = info;
+    expectType<number>(width);
+    expectType<number>(height);
+    expectType<true>(loaded);
+  }
 });
 useParser("str", () => 0);
 useParser(false, () => 0);
@@ -33,10 +36,15 @@ useWorkerParser(undefined, () => 0);
 useWorkerParser(null, () => 0);
 
 useWorkerParser("str", (info) => {
-  info.delays;
-  info.frames;
-  info.height;
-  info.width;
+  if ("error" in info) {
+    info.error;
+    info.loaded;
+  } else {
+    info.delays;
+    info.frames;
+    info.height;
+    info.width;
+  }
 
   expectError(info.wrong);
 });
