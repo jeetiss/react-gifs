@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import ReactDOM from "react-dom";
 import { useControls, buttonGroup } from "leva";
+import toast, { Toaster } from "react-hot-toast";
 import useLocation from "./use-location";
 
 import "./styles.css";
@@ -185,14 +186,19 @@ const Player = () => {
   }, [src]);
 
   useWorkerParser(src, (info) => {
-    // set initial delay
-    update({
-      loaded: true,
-      frames: info.frames,
-      length: info.frames.length,
-      gifDelays: info.delays,
-    });
-    set({ position: clamp(0, index, info.frames.length - 1) });
+    console.log(info);
+    if (info.error) {
+      update({ loaded: true });
+      toast.error(`Can't parse this GIF`);
+    } else {
+      update({
+        loaded: true,
+        frames: info.frames,
+        length: info.frames.length,
+        gifDelays: info.delays,
+      });
+      set({ position: clamp(0, index, info.frames.length - 1) });
+    }
   });
 
   const delays = useMemo(() => state.gifDelays.map((delay) => delay / speed), [
@@ -257,6 +263,12 @@ const Toggle = () => {
 ReactDOM.render(
   <StrictMode>
     <Player />
+    <Toaster
+      position="bottom-left"
+      toastOptions={{
+        className: "e-toast",
+      }}
+    />
   </StrictMode>,
   document.getElementById("root")
 );

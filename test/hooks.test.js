@@ -34,3 +34,9 @@ it("works with animated gif", async () => {
   expect(result.frames.length).toBe(3);
   expect(result.delays.length).toBe(3);
 });
+
+it("works fire with error", async () => {
+  const { result } = await renderHookAsync((done) => useParser("/error", done));
+
+  expect(result.error.message).toBe('Wrong content type: "image/png"');
+});

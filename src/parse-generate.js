@@ -14,7 +14,13 @@ const validateAndFix = (gif) => {
 
 export const parse = (src, { signal }) =>
   fetch(src, { signal })
-    .then((resp) => resp.arrayBuffer())
+    .then((resp) => {
+      if (resp.headers.get("Content-Type") !== "image/gif")
+        throw Error(
+          `Wrong content type: "${resp.headers.get("Content-Type")}"`
+        );
+      return resp.arrayBuffer();
+    })
     .then((buffer) => parseGIF(buffer))
     .then((gif) => {
       validateAndFix(gif);
